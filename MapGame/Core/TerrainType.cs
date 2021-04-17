@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace MapGame.Core.EntityTypes
+namespace MapGame.Core
 {
-    public class Settlement : IMapEntity
+    public class TerrainType
     {
+        public int Id { get; }
+
         public MovementBlockType MovementBlock { get; }
 
         public IReadOnlyList<Modifier> Modifiers
@@ -14,11 +16,10 @@ namespace MapGame.Core.EntityTypes
             }
         }
 
-        public Point Position { get; }
 
-        public Settlement(Point position, MovementBlockType movementBlock, IEnumerable<Modifier> modifiers)
+        public TerrainType(int id, MovementBlockType movementBlock, IEnumerable<Modifier> modifiers)
         {
-            Position = position;
+            Id = id;
             MovementBlock = movementBlock;
 
             _modifiers = new List<Modifier>();
@@ -27,6 +28,7 @@ namespace MapGame.Core.EntityTypes
                 _modifiers.Add(modifier);
             }
         }
+
 
         public double GetMovementDifficulty()
         {
@@ -45,6 +47,7 @@ namespace MapGame.Core.EntityTypes
             }
             return result;
         }
+
 
         private readonly List<Modifier> _modifiers;
     }

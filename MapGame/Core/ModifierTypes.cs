@@ -2,6 +2,6 @@
 {
     public enum ModifierTypes
     {
-        Speed = 1,
+        MovementDifficulty = 1,
     }
 }

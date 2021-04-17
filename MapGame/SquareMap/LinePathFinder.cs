@@ -1,10 +1,7 @@
 ﻿using MapGame.Core;
-using MapGame.Core.EntityTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MapGame.SquareMap
 {
@@ -30,14 +27,6 @@ namespace MapGame.SquareMap
         {
             var path = FindPath(start, end);
             return GetPathLength(path);
-        }
-
-        public IEnumerable<Route> FindRoutes(Settlement selected, double maxDistance)
-        {
-            foreach(var destination in _map.Settlements)
-            {
-
-            }
         }
 
         private readonly Map _map;
@@ -92,7 +81,7 @@ namespace MapGame.SquareMap
             for (int i = 1; i < path.Length; i++)
             {
                 var cell = _map[path[i].X, path[i].Y];
-                length += cell.MoveModifier;
+                length += cell.MovementDifficulty;
             }
             return length;
         }

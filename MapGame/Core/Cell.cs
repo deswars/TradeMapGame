@@ -4,8 +4,12 @@ namespace MapGame.Core
 {
     public class Cell
     {
-        public TerraitType Terrain { get; private set; }
-        public MoveClasses MoveClass { get; private set; }
+        public TerrainType Terrain { get; private set; }
+
+        public MovementBlockType MovementBlock { get; private set; }
+
+        public double MovementDifficulty { get; private set; }
+
         public IReadOnlyList<IMapEntity> Entities
         {
             get
@@ -13,62 +17,65 @@ namespace MapGame.Core
                 return _entities.AsReadOnly();
             }
         }
-        public double MoveModifier
-        {
-            get
-            {
-                double result = Terrain.MoveSpeed;
-                if ((MoveClass & MoveClasses.GroundBlocked) != MoveClasses.FreeMovement)
-                {
-                    return double.PositiveInfinity;
-                }
 
-                foreach (var entity in Entities)
-                {
-                    result += entity.MoveSpeed;
-                }
-                if (result < MapConfig.MinSpeedModifier)
-                {
-                    result = MapConfig.MinSpeedModifier;
-                }
-                return result;
-            }
-        }
-
-        public Cell(TerraitType terrain)
+        public Cell(TerrainType terrain)
         {
             Terrain = terrain;
-            MoveClass = Terrain.MoveClass;
             _entities = new List<IMapEntity>();
+            UpdateMovementDifficulty();
         }
 
-        public void ChangeTerrain(TerraitType newTerrain)
+        public void ChangeTerrain(TerrainType newTerrain)
         {
             Terrain = newTerrain;
-            UpdateMoveClass();
+            UpdateMovementDifficulty();
         }
 
         public void AddEntity(IMapEntity entity)
         {
             _entities.Add(entity);
-            UpdateMoveClass();
+            UpdateMovementDifficulty();
         }
 
         public void RemoveEntity(IMapEntity entity)
         {
             _entities.Remove(entity);
-            UpdateMoveClass();
+            UpdateMovementDifficulty();
         }
+
 
         private readonly List<IMapEntity> _entities;
 
-        private void UpdateMoveClass()
+        private void UpdateMovementBlock()
         {
-            MoveClass = Terrain.MoveClass;
+            MovementBlock = Terrain.MovementBlock;
             foreach (var entity in _entities)
             {
-                MoveClass &= entity.MoveClass;
+                MovementBlock |= entity.MovementBlock;
             }
         }
+
+        private void UpdateMovementDifficulty()
+        {
+            UpdateMovementBlock();
+            MovementDifficulty = Terrain.GetMovementDifficulty();
+            if (MovementBlock != MovementBlockType.None)
+            {
+                MovementDifficulty = double.PositiveInfinity;
+            }
+            else
+            {
+                foreach (var entity in Entities)
+                {
+                    MovementDifficulty += entity.GetMovementDifficulty();
+                }
+
+                if (MovementDifficulty < MapConfig.MinMovementDifficultyModifier)
+                {
+                    MovementDifficulty = MapConfig.MinMovementDifficultyModifier;
+                }
+            }
+        }
+
     }
 }

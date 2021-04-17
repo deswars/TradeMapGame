@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MapGame.Core;
+﻿using MapGame.Core;
 using MapGame.Core.EntityTypes;
+using System;
+using System.Collections.Generic;
 
 namespace MapGame
 {
     public class Engine
     {
-        public Engine(List<TerraitType> terrains, IMap map, IPathFinder pathFinder)
+        public Engine(List<TerrainType> terrains, IMap map, IPathFinder pathFinder)
         {
             _terrains = terrains;
             _map = map;
@@ -23,8 +20,6 @@ namespace MapGame
             {
                 return false;
             }
-            var newRoutes = _pathFinder.FindRoutes(settlement, MapConfig.MaxDistance);
-            _routes.AddRange(newRoutes);
             return true;
         }
 
@@ -39,7 +34,7 @@ namespace MapGame
             throw new NotImplementedException();
         }
 
-        private readonly List<TerraitType> _terrains;
+        private readonly List<TerrainType> _terrains;
         private readonly IMap _map;
         private readonly IPathFinder _pathFinder;
         private readonly List<Route> _routes = new();

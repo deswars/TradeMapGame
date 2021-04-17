@@ -4,8 +4,10 @@ namespace MapGame.Core
 {
     public interface IMapEntity
     {
-        MoveClasses MoveClass { get; }
+        MovementBlockType MovementBlock { get; }
+
         IReadOnlyList<Modifier> Modifiers { get; }
-        double MoveSpeed { get; }
+
+        double GetMovementDifficulty();
     }
 }

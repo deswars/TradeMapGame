@@ -8,7 +8,9 @@ namespace MapGame.SquareMap
     public class Map : IMap
     {
         public int Width { get; }
+
         public int Height { get; }
+
         public IReadOnlyList<Settlement> Settlements
         {
             get
@@ -17,7 +19,13 @@ namespace MapGame.SquareMap
             }
         }
 
-        public Map(int width, int height, TerraitType defaultTerrain)
+        public Cell this[int column, int row]
+        {
+            get { return _map[column, row]; }
+        }
+
+
+        public Map(int width, int height, TerrainType defaultTerrain)
         {
             Width = width;
             Height = height;
@@ -29,11 +37,6 @@ namespace MapGame.SquareMap
                     _map[i, k] = new Cell(defaultTerrain);
                 }
             }
-        }
-
-        public Cell this[int column, int row]
-        {
-            get { return _map[column, row]; }
         }
 
         public IEnumerable<Cell> GetNeigborCells(int column, int row)
@@ -78,7 +81,9 @@ namespace MapGame.SquareMap
             _settlements.Remove(settlement);
         }
 
+
         private readonly Cell[,] _map;
-        private List<Settlement> _settlements = new();
+
+        private readonly List<Settlement> _settlements = new();
     }
 }

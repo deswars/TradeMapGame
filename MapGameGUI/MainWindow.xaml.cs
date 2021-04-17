@@ -18,7 +18,6 @@ namespace MapGame.GUI
         }
 
         private WriteableBitmap _writeableBitmap;
-        private SquareMap.Map _map; 
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -29,47 +28,32 @@ namespace MapGame.GUI
             m.ScaleAt(2, 2, 0, 0);
             iMap.LayoutTransform = new MatrixTransform(m);
 
+            int scale = 7;
+            MapBuilder builder = new MapBuilder();
+            Map map = builder.NewMap;
+            int width = builder.Width * scale;
+            int height = builder.Height * scale;
+            Color[] terrainColors = new Color[3] { Colors.Green, Colors.Yellow, Colors.Brown };
+            Color settlementColor = Colors.Red;
 
-            int width = 100;
-            int height = 100;
             _writeableBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr32, null);
             iMap.Source = _writeableBitmap;
 
-            List<TerraitType> terrains = new();
-
-            List<Modifier> terrain1Mod = new()
-            {
-                new Modifier(ModifierTypes.Speed, 1)
-            };
-            TerraitType terrain1 = new(0, MoveClasses.FreeMovement, terrain1Mod);
-            terrains.Add(terrain1);
-
-            List<Modifier> terrain2Mod = new()
-            {
-                new Modifier(ModifierTypes.Speed, 2)
-            };
-            TerraitType terrain2 = new(1, MoveClasses.FreeMovement | MoveClasses.GroundBlocked, terrain2Mod);
-            terrains.Add(terrain2);
-
-            _map = new SquareMap.Map(100, 100, terrain1);
-            _map[1, 1].ChangeTerrain(terrain2);
-            _map[1, 2].ChangeTerrain(terrain2);
-            _map[1, 3].ChangeTerrain(terrain2);
-            _map[2, 1].ChangeTerrain(terrain2);
-            _map[2, 2].ChangeTerrain(terrain2);
-            _map[3, 1].ChangeTerrain(terrain2);
-
-            Color[] terrainColors = new Color[2] { Colors.Green, Colors.Brown};
 
             _writeableBitmap.Lock();
-            for( int i = 0; i < _map.Width; i++)
+            for( int i = 0; i < map.Width; i++)
             {
-                for (int k = 0; k < _map.Height; k++)
+                for (int k = 0; k < map.Height; k++)
                 {
-                    var color = terrainColors[_map[i, k].Terrain.Id];
-                    DrawRectangle(_writeableBitmap, i, k, 1, 1, color);
+                    var color = terrainColors[map[i, k].Terrain.Id];
+                    DrawRectangle(_writeableBitmap, i * scale + 1, k * scale + 1, scale - 2, scale - 2, color);
                 }
             }
+            foreach ( var settlement in map.Settlements)
+            {
+                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 2, settlement.Position.Y * scale + 2, scale - 4, scale - 4, settlementColor);
+            }
+
             _writeableBitmap.Unlock();
         }
 
