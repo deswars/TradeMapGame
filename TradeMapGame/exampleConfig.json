@@ -1,0 +1,61 @@
+﻿{
+  "Constants": {
+    "MinMovementDifficultyModifier": 0.1,
+    "MoneyResource": "r_money",
+    "DefaultTerrain": "t_plains"
+  },
+  "ResourceTypes": [
+    { "Id": "r_money" },
+    { "Id": "r_food" },
+    { "Id": "r_stone" }
+  ],
+  "TerrainTypes": [
+    {
+      "Id": "t_plains",
+      "Resources": [
+        {
+          "Resource": "r_food",
+          "Difficulty": 1,
+          "Richness": 2
+        }
+      ]
+    },
+    {
+      "Id": "t_hills",
+      "Resources": [
+        {
+          "Resource": "r_food",
+          "Difficulty": 1,
+          "Richness": 1
+        }
+      ]
+    },
+    {
+      "Id": "t_mountains",
+      "Resources": [
+        {
+          "Resource": "r_food",
+          "Difficulty": 2,
+          "Richness": 0.5
+        },
+        {
+          "Resource": "r_stone",
+          "Difficulty": 1,
+          "Richness": 1
+        }
+      ]
+    }
+  ],
+  "MapFeautreTypes": [
+    {
+      "Id": "f_gold",
+      "Resources": [
+        {
+          "Resource": "r_money",
+          "Difficulty": 1,
+          "Richness": 1
+        }
+      ]
+    }
+  ]
+}

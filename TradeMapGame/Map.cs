@@ -1,23 +1,11 @@
-﻿using MapGame.Core;
-using MapGame.Core.EntityTypes;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
-namespace MapGame.SquareMap
+namespace TradeMapGame
 {
-    public class Map : IMap
+    public class Map
     {
         public int Width { get; }
-
         public int Height { get; }
-
-        public IReadOnlyList<Settlement> Settlements
-        {
-            get
-            {
-                return _settlements.AsReadOnly();
-            }
-        }
 
         public Cell this[int column, int row]
         {
@@ -61,29 +49,7 @@ namespace MapGame.SquareMap
             return neighborList;
         }
 
-        public bool AddSettlement(Settlement settlement)
-        {
-            var position = settlement.Position;
-            if (_settlements.Any(x => x.Position == position))
-            {
-                return false;
-            }
-
-            _map[position.X, position.Y].AddEntity(settlement);
-            _settlements.Add(settlement);
-            return true;
-        }
-
-        public void RemoveSettlement(Settlement settlement)
-        {
-            var position = settlement.Position;
-            _map[position.X, position.Y].RemoveEntity(settlement);
-            _settlements.Remove(settlement);
-        }
-
-
         private readonly Cell[,] _map;
-
-        private readonly List<Settlement> _settlements = new();
     }
+
 }

@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MapGame\MapGame.csproj" />
+    <ProjectReference Include="..\TradeMapGame\TradeMapGame.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,8 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MapGame.Core;
-using MapGame.SquareMap;
+using TradeMapGame;
 
 namespace MapGame.GUI
 {
@@ -18,6 +17,7 @@ namespace MapGame.GUI
         }
 
         private WriteableBitmap _writeableBitmap;
+        private Engine _engine;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -28,20 +28,29 @@ namespace MapGame.GUI
             m.ScaleAt(2, 2, 0, 0);
             iMap.LayoutTransform = new MatrixTransform(m);
 
+            Configuration conf = new Configuration("exampleConfig.json");
+
+            _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", conf);
+            Map map = _engine.Map;
+
             int scale = 7;
-            MapBuilder builder = new MapBuilder();
-            Map map = builder.NewMap;
-            int width = builder.Width * scale;
-            int height = builder.Height * scale;
-            Color[] terrainColors = new Color[3] { Colors.Green, Colors.Yellow, Colors.Brown };
+
+            int width = map.Width * scale;
+            int height = map.Height * scale;
+            Dictionary<string, Color> terrainColors = new();
+            terrainColors.Add("t_plains", Colors.Green);
+            terrainColors.Add("t_hills", Colors.Yellow);
+            terrainColors.Add("t_mountains", Colors.Red);
+
             Color settlementColor = Colors.Red;
+            Color settlementBorder = Colors.White;
 
             _writeableBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr32, null);
             iMap.Source = _writeableBitmap;
 
 
             _writeableBitmap.Lock();
-            for( int i = 0; i < map.Width; i++)
+            for (int i = 0; i < map.Width; i++)
             {
                 for (int k = 0; k < map.Height; k++)
                 {
@@ -49,15 +58,16 @@ namespace MapGame.GUI
                     DrawRectangle(_writeableBitmap, i * scale + 1, k * scale + 1, scale - 2, scale - 2, color);
                 }
             }
-            foreach ( var settlement in map.Settlements)
+            foreach (var settlement in _engine.Settlements)
             {
-                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 2, settlement.Position.Y * scale + 2, scale - 4, scale - 4, settlementColor);
+                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 2, settlement.Position.Y * scale + 2, scale - 4, scale - 4, settlementBorder);
+                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 3, settlement.Position.Y * scale + 3, scale - 6, scale - 6, settlementColor);
             }
 
             _writeableBitmap.Unlock();
         }
 
-         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             Matrix m = iMap.LayoutTransform.Value;
             if (e.Key == System.Windows.Input.Key.Q)
@@ -69,7 +79,7 @@ namespace MapGame.GUI
                     0);
             }
             else if (e.Key == System.Windows.Input.Key.W)
-                    {
+            {
                 m.ScaleAt(
                     1.0 / 1.5,
                     1.0 / 1.5,
@@ -111,6 +121,21 @@ namespace MapGame.GUI
             }
 
             writeableBitmap.AddDirtyRect(new Int32Rect(left, top, width, height));
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            tbSettlements.Text = "";
+            _engine.NextTick();
+            foreach (var settlement in _engine.Settlements)
+            {
+                tbSettlements.Text += "Settlement: X=" + settlement.Position.X + ",Y=" + settlement.Position.Y + "\n";
+                foreach (var resoure in settlement.Resources)
+                {
+                    tbSettlements.Text += resoure.Key.Id + ":" + resoure.Value + "\n";
+                }
+                tbSettlements.Text += "\n";
+            }
         }
     }
 }
