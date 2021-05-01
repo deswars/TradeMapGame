@@ -18,6 +18,11 @@ namespace MapGame.GUI
 
         private WriteableBitmap _writeableBitmap;
         private Engine _engine;
+        private readonly Dictionary<string, Color> _terrainColors = new();
+        private readonly Dictionary<string, Color> _feautreColors = new();
+        private readonly int _scale = 7;
+        private Color _settlementColor = Colors.Red;
+        private Color _settlementBorder = Colors.Black;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -25,7 +30,7 @@ namespace MapGame.GUI
             RenderOptions.SetEdgeMode(iMap, EdgeMode.Aliased);
 
             Matrix m = iMap.LayoutTransform.Value;
-            m.ScaleAt(2, 2, 0, 0);
+            m.ScaleAt(5, 5, 0, 0);
             iMap.LayoutTransform = new MatrixTransform(m);
 
             Configuration conf = new("exampleConfig.json");
@@ -33,46 +38,48 @@ namespace MapGame.GUI
             _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", "exampleMapFeautres.bmp", conf);
             Map map = _engine.Map;
 
-            int scale = 7;
+            int width = map.Width * _scale;
+            int height = map.Height * _scale;
+            _terrainColors.Add("t_plains", Colors.Green);
+            _terrainColors.Add("t_hills", Colors.Orange);
+            _terrainColors.Add("t_mountains", Colors.DarkGray);
 
-            int width = map.Width * scale;
-            int height = map.Height * scale;
-            Dictionary<string, Color> terrainColors = new();
-            terrainColors.Add("t_plains", Colors.Green);
-            terrainColors.Add("t_hills", Colors.Orange);
-            terrainColors.Add("t_mountains", Colors.DarkGray);
-
-            Dictionary<string, Color> feautreColors = new();
-            feautreColors.Add("f_forest", Colors.DarkGreen);
-            feautreColors.Add("f_gold", Colors.Yellow);
-            feautreColors.Add("f_metal", Colors.Brown);
-
-            Color settlementColor = Colors.Red;
-            Color settlementBorder = Colors.Black;
+            _feautreColors.Add("f_forest", Colors.DarkGreen);
+            _feautreColors.Add("f_gold", Colors.Yellow);
+            _feautreColors.Add("f_metal", Colors.Brown);
 
             _writeableBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr32, null);
             iMap.Source = _writeableBitmap;
 
+            DrawMap();
+        }
 
+        private void DrawMap()
+        {
+            Map map = _engine.Map;
             _writeableBitmap.Lock();
             for (int i = 0; i < map.Width; i++)
             {
                 for (int k = 0; k < map.Height; k++)
                 {
-                    var color = terrainColors[map[i, k].Terrain.Id];
-                    DrawRectangle(_writeableBitmap, i * scale, k * scale, scale, scale, color);
+                    var color = _terrainColors[map[i, k].Terrain.Id];
+                    DrawRectangle(_writeableBitmap, i * _scale, k * _scale, _scale, _scale, color);
 
                     if (map[i, k].MapFeautres.Count > 0)
                     {
-                        var fcolor = feautreColors[map[i, k].MapFeautres[0].Id];
-                        DrawRectangle(_writeableBitmap, i * scale + 1, k * scale + 1, scale - 2, scale - 2, fcolor);
+                        var fcolor = _feautreColors[map[i, k].MapFeautres[0].Id];
+                        DrawRectangle(_writeableBitmap, i * _scale + 1, k * _scale + 1, _scale - 2, _scale - 2, fcolor);
+                    }
+                    if (map[i, k].BuiltCollector != null)
+                    {
+                        DrawRectangle(_writeableBitmap, i * _scale + 2, k * _scale + 2, _scale - 4, _scale - 4, _settlementBorder);
                     }
                 }
             }
             foreach (var settlement in _engine.Settlements)
             {
-                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 2, settlement.Position.Y * scale + 2, scale - 4, scale - 4, settlementBorder);
-                DrawRectangle(_writeableBitmap, settlement.Position.X * scale + 3, settlement.Position.Y * scale + 3, scale - 6, scale - 6, settlementColor);
+                DrawRectangle(_writeableBitmap, settlement.Position.X * _scale + 2, settlement.Position.Y * _scale + 2, _scale - 4, _scale - 4, _settlementBorder);
+                DrawRectangle(_writeableBitmap, settlement.Position.X * _scale + 3, settlement.Position.Y * _scale + 3, _scale - 6, _scale - 6, _settlementColor);
             }
 
             _writeableBitmap.Unlock();
@@ -83,22 +90,13 @@ namespace MapGame.GUI
             Matrix m = iMap.LayoutTransform.Value;
             if (e.Key == System.Windows.Input.Key.Q)
             {
-                m.ScaleAt(
-                    1.5,
-                    1.5,
-                    0,
-                    0);
+                m.ScaleAt(1.5, 1.5, 0, 0);
             }
             else if (e.Key == System.Windows.Input.Key.W)
             {
-                m.ScaleAt(
-                    1.0 / 1.5,
-                    1.0 / 1.5,
-                    0,
-                    0);
+                m.ScaleAt(1.0 / 1.5, 1.0 / 1.5, 0, 0);
             }
             iMap.LayoutTransform = new MatrixTransform(m);
-
         }
 
         private static void DrawRectangle(WriteableBitmap writeableBitmap, int left, int top, int width, int height, Color color)
@@ -137,15 +135,39 @@ namespace MapGame.GUI
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             tbSettlements.Text = "";
-            _engine.NextTick();
+            _engine.NextTurn();
             foreach (var settlement in _engine.Settlements)
             {
                 tbSettlements.Text += "Settlement: X=" + settlement.Position.X + ",Y=" + settlement.Position.Y + "\n";
+                tbSettlements.Text += "Population = " + settlement.Population + "\n";
+                tbSettlements.Text += "Buildings : ";
+                foreach (var building in settlement.Buildings)
+                {
+                    tbSettlements.Text += building.Type.Id + " ";
+                }
+                tbSettlements.Text += "\nCollectors : ";
+                foreach (var collector in settlement.Collectors)
+                {
+                    tbSettlements.Text += collector.Type.Id + " ";
+                }
+                tbSettlements.Text += "\nResurces(stored, price) :\n";
                 foreach (var resoure in settlement.Resources)
                 {
-                    tbSettlements.Text += resoure.Key.Id + ":" + resoure.Value + "\n";
+                    tbSettlements.Text += resoure.Key.Id + ": " + resoure.Value.ToString("F") + ", " + settlement.Prices[resoure.Key].ToString("F") + "\n";
                 }
-                tbSettlements.Text += "\n";
+                tbSettlements.Text += "\n\n";
+            }
+            DrawMap();
+            WriteLog();
+        }
+
+        private void WriteLog()
+        {
+            tbLog.Text = "";
+            var log = _engine.Log.GetLastTurnLog();
+            foreach ( var str in log)
+            {
+                tbLog.Text += str + "\n";
             }
         }
     }

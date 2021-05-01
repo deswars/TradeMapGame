@@ -41,12 +41,12 @@ namespace TradeMapGame
 
         public int GetFreePopulation()
         {
-            return Population - Collectors.Count + Buildings.Count;
+            return Population - Collectors.Count - Buildings.Count;
         }
 
         public Dictionary<ResourceType, double> GetResourceConsumption()
         {
-            var popDemands = _conf.PopulationDemandes;
+            var popDemands = _conf.PopulationDemands;
             Dictionary<ResourceType, double> result = new();
             foreach (var demand in popDemands)
             {

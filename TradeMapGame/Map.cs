@@ -46,6 +46,22 @@ namespace TradeMapGame
             {
                 neighborList.Add(_map[column, row + 1]);
             }
+            if (column > 0 && row > 0)
+            {
+                neighborList.Add(_map[column - 1, row - 1]);
+            }
+            if (column > 0 && (row < Height - 1))
+            {
+                neighborList.Add(_map[column - 1, row + 1]);
+            }
+            if ((column < Width - 1) && row > 0)
+            {
+                neighborList.Add(_map[column + 1, row - 1]);
+            }
+            if ((column < Width - 1) && (row < Height - 1))
+            {
+                neighborList.Add(_map[column + 1, row + 1]);
+            }
             return neighborList;
         }
 

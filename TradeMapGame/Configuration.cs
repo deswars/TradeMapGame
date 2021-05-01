@@ -15,12 +15,15 @@ namespace TradeMapGame
         public double ExcessPriceDivider { get; private set; }
         public double MaxExcessPriceDivider { get; private set; }
         public double UndesiredEffectiveExcess { get; private set; }
-        public Dictionary<ResourceType, double> PopulationDemandes { get; }
+        public double MinPrice { get; private set; }
+        public double MaxPrice { get; private set; }
         public Dictionary<string, TerrainType> TerrainTypes { get; }
         public Dictionary<string, ResourceType> ResourceTypes { get; }
         public Dictionary<string, TerrainFeautre> MapFeautreTypes { get; }
         public Dictionary<string, CollectorType> CollectorTypes { get; }
         public Dictionary<string, BuildingType> BuildingTypes { get; }
+        public Dictionary<ResourceType, double> PopulationDemands { get; }
+        public Dictionary<ResourceType, double> GrowthDemand { get; }
 
         public Configuration(string configurationFile)
         {
@@ -29,7 +32,8 @@ namespace TradeMapGame
             MapFeautreTypes = new();
             CollectorTypes = new();
             BuildingTypes = new();
-            PopulationDemandes = new();
+            PopulationDemands = new();
+            GrowthDemand = new();
 
             string configurationJson = File.ReadAllText(configurationFile);
             var inputJson = JObject.Parse(configurationJson);
@@ -67,6 +71,9 @@ namespace TradeMapGame
             StarvePriceMultiply = constantsJson.Value<double>("StarvePriceMultiply");
             ExcessPriceDivider = constantsJson.Value<double>("ExcessPriceDivider");
             UndesiredEffectiveExcess = constantsJson.Value<double>("UndesiredEffectiveExcess");
+            MaxExcessPriceDivider = constantsJson.Value<double>("MaxExcessPriceDivider");
+            MinPrice = constantsJson.Value<double>("MinPrice");
+            MaxPrice = constantsJson.Value<double>("MaxPrice");
         }
 
         private void BuildResources(JToken resourceListJson)
@@ -194,14 +201,18 @@ namespace TradeMapGame
         {
             foreach(var resource in ResourceTypes)
             {
-                PopulationDemandes.Add(resource.Value, 0);
+                PopulationDemands.Add(resource.Value, 0);
             }
 
             foreach (var demandJson in demandsListJson)
             {
                 ResourceType resource = ResourceTypes[demandJson.Value<string>("Resource")];
                 double amount = demandJson.Value<double>("Amount");
-                PopulationDemandes[resource] = amount;
+                PopulationDemands[resource] = amount;
+                if (demandJson["Growth"] != null)
+                {
+                    GrowthDemand.Add(resource, demandJson.Value<double>("Growth"));
+                }
             }
         }
     }

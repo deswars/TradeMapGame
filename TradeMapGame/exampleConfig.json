@@ -3,12 +3,14 @@
     "MoneyResource": "r_money",
     "DefaultTerrain": "t_plains",
     "DesiredReserveTurns": 5,
-    "StarvePriceMultiply": 1.5,
-    "ExcessPriceDivider": 1.2,
+    "StarvePriceMultiply": 0.1,
+    "ExcessPriceDivider": 0.05,
     "MaxExcessPriceDivider": 1.5,
     "UndesiredEffectiveExcess": 0.5,
     "ChanceToCreateCollector": 0.75,
-    "ExpansionDelay": 5
+    "ExpansionDelay": 5,
+    "MinPrice": 0.01,
+    "MaxPrice": 1000
   },
   "ResourceTypes": [
     {
@@ -66,11 +68,13 @@
     "Demands": [
       {
         "Resource": "r_grain",
-        "Amount": 1
+        "Amount": 1,
+        "Growth": 100
       },
       {
         "Resource": "r_meat",
-        "Amount": 1
+        "Amount": 1,
+        "Growth": 100
       },
       {
         "Resource": "r_plank",
@@ -235,6 +239,21 @@
       "Output": [
         {
           "Resource": "r_instrument",
+          "Amount": 10
+        }
+      ]
+    },
+    {
+      "Id": "b_weaver",
+      "Input": [
+        {
+          "Resource": "r_cotton",
+          "Amount": 5
+        },
+      ],
+      "Output": [
+        {
+          "Resource": "r_cloth",
           "Amount": 10
         }
       ]

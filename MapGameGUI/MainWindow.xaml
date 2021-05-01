@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MapGame.GUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" KeyDown="Window_KeyDown">
+        Title="MainWindow" Height="800" Width="1000" Loaded="Window_Loaded" KeyDown="Window_KeyDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20"/>
@@ -15,13 +15,33 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="300"/>
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
         <Rectangle Grid.Column="1" Grid.Row="1" Fill="LightGray"/>
         <ScrollViewer Name="svMap" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Column="1" Grid.Row="1">
             <Image Name="iMap" Stretch="None" VerticalAlignment="Top" HorizontalAlignment="Left"/>
         </ScrollViewer>
-        <Button Grid.Column="2" Grid.Row="0" Content="Next Step" Click="Button_Click"/>
-        <TextBlock Grid.Column="2" Grid.Row="1" Name="tbSettlements"/>
+        <Button Grid.Column="1" Grid.Row="0" Width="100" HorizontalAlignment="Left" Content="Next Turn" Click="Button_Click"/>
+        <ScrollViewer Grid.Column="2" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="Settlements" FontSize="14" FontWeight="Bold"/>
+                <TextBlock Grid.Row="1" Name="tbSettlements" TextWrapping="Wrap"/>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="Turn log" FontSize="14" FontWeight="Bold"/>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <TextBlock Name="tbLog" TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>
