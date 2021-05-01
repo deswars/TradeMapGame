@@ -4,7 +4,7 @@ namespace TradeMapGame
 {
     public class CollectorType
     {
-        public string Id;
+        public string Id { get; }
         public List<TerrainType> RequiredTerrain { get; }
         public List<TerrainFeautre> RequiredFeautre { get; }
         public List<ResourceType> Collected { get; }

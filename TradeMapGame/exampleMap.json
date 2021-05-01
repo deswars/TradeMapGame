@@ -37,7 +37,6 @@
         "X": 1,
         "Y": 1
       },
-      "GatherPower": 1,
       "Population": 5
     },
     {
@@ -45,7 +44,6 @@
         "X": 8,
         "Y": 1
       },
-      "GatherPower": 1,
       "Population": 1
     },
     {
@@ -53,7 +51,6 @@
         "X": 1,
         "Y": 8
       },
-      "GatherPower": 1,
       "Population": 5
     },
     {
@@ -61,7 +58,6 @@
         "X": 7,
         "Y": 7
       },
-      "GatherPower": 1,
       "Population": 5
     }
   ]

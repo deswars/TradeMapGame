@@ -6,35 +6,62 @@ namespace TradeMapGame
     {
         public Point Position { get; }
         public Dictionary<ResourceType, double> Resources { get; }
-        public double GatherPower { get; }
+        public Dictionary<ResourceType, double> Prices { get; }
         public int Population { get; set; }
         public List<Collector> Collectors { get; }
         public List<Building> Buildings { get; }
 
-        public Settlement(Point position, int population, double gatherPower, Dictionary<ResourceType, double> resources)
+        public Settlement(Configuration configuration, Point position, int population, Dictionary<ResourceType, double> resources)
         {
             Position = position;
-            GatherPower = gatherPower;
             Resources = resources;
             Population = population;
+            _conf = configuration;
 
             Collectors = new();
             Buildings = new();
+            Prices = new();
+            foreach (var resource in Resources)
+            {
+                Prices.Add(resource.Key, resource.Key.BasePrice);
+            }
         }
 
-        public void GatherResource(Cell cell)
+        public void GatherResource()
         {
-            foreach (var resource in cell.Terrain.Resources)
+            foreach(var collector in Collectors)
             {
-                Resources[resource.Type] += GatherPower * resource.Richness;
+                collector.Collect();
             }
-            foreach (var feautre in cell.MapFeautres)
+            foreach(var building in Buildings)
             {
-                foreach (var resource in feautre.Resources)
-                {
-                    Resources[resource.Type] += GatherPower * resource.Richness;
-                }
+                building.Produce();
             }
         }
+
+        public int GetFreePopulation()
+        {
+            return Population - Collectors.Count + Buildings.Count;
+        }
+
+        public Dictionary<ResourceType, double> GetResourceConsumption()
+        {
+            var popDemands = _conf.PopulationDemandes;
+            Dictionary<ResourceType, double> result = new();
+            foreach (var demand in popDemands)
+            {
+                result.Add(demand.Key, demand.Value * Population);
+            }
+            foreach (var build in Buildings)
+            {
+                foreach (var res in build.Type.Input)
+                {
+                    result[res.Key] += res.Value;
+                }
+            }
+            return result;
+        }
+
+        private readonly Configuration _conf;
     }
 }

@@ -28,7 +28,7 @@ namespace MapGame.GUI
             m.ScaleAt(2, 2, 0, 0);
             iMap.LayoutTransform = new MatrixTransform(m);
 
-            Configuration conf = new Configuration("exampleConfig.json");
+            Configuration conf = new("exampleConfig.json");
 
             _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", "exampleMapFeautres.bmp", conf);
             Map map = _engine.Map;

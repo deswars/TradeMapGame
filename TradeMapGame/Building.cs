@@ -1,4 +1,7 @@
-﻿namespace TradeMapGame
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace TradeMapGame
 {
     public class Building
     {
@@ -10,6 +13,23 @@
         {
             Owner = owner;
             Type = type;
+        }
+
+
+        public void Produce()
+        {
+            var resources = Owner.Resources;
+            if (Type.Input.All(res => res.Value < resources[res.Key]))
+            {
+                foreach (var input in Type.Input)
+                {
+                    resources[input.Key] += input.Value;
+                }
+                foreach (var output in Type.Output)
+                {
+                    resources[output.Key] += output.Value;
+                }
+            }
         }
     }
 }

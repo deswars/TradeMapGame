@@ -1,21 +1,66 @@
 ﻿{
   "Constants": {
-    "MinMovementDifficultyModifier": 0.1,
     "MoneyResource": "r_money",
     "DefaultTerrain": "t_plains",
-    "DesiredReserveTurns": 5
+    "DesiredReserveTurns": 5,
+    "StarvePriceMultiply": 1.5,
+    "ExcessPriceDivider": 1.2,
+    "MaxExcessPriceDivider": 1.5,
+    "UndesiredEffectiveExcess": 0.5,
+    "ChanceToCreateCollector": 0.75,
+    "ExpansionDelay": 5
   },
   "ResourceTypes": [
-    { "Id": "r_money" },
-    { "Id": "r_grain" },
-    { "Id": "r_meat" },
-    { "Id": "r_wood" },
-    { "Id": "r_plank" },
-    { "Id": "r_stone" },
-    { "Id": "r_metal" },
-    { "Id": "r_instrument" },
-    { "Id": "r_cotton" },
-    { "Id": "r_cloth" }
+    {
+      "Id": "r_money",
+      "BasePrice": 1,
+      "DecayRate": 0.01
+    },
+    {
+      "Id": "r_grain",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_meat",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_wood",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_plank",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_stone",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_metal",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_instrument",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_cotton",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    },
+    {
+      "Id": "r_cloth",
+      "BasePrice": 1,
+      "DecayRate": 0.05
+    }
   ],
   "Population": {
     "Demands": [

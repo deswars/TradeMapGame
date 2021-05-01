@@ -57,14 +57,13 @@ namespace TradeMapGame
                 int x = settlementJson["Position"].Value<int>("X");
                 int y = settlementJson["Position"].Value<int>("Y");
                 Point position = new(x, y);
-                double gatherPower = settlementJson.Value<double>("GatherPower");
                 int population = settlementJson.Value<int>("Population");
                 Dictionary<ResourceType, double> resources = new();
                 foreach (var resourse in conf.ResourceTypes.Values)
                 {
                     resources.Add(resourse, 0);
                 }
-                Settlement settlment = new(position, population, gatherPower, resources);
+                Settlement settlment = new(conf, position, population, resources);
                 engine.Settlements.Add(settlment);
             }
 

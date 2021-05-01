@@ -6,17 +6,21 @@ namespace TradeMapGame
 {
     public class Configuration
     {
-        public double MinMovementDifficultyModifier { get; private set; }
         public string MoneyResource { get; private set; }
         public string DefaultTerrain { get; private set; }
         public double DesiredReserveTurns { get; private set; }
+        public double ChanceToCreateCollector { get; private set; }
+        public double ExpansionDelay { get; private set; }
+        public double StarvePriceMultiply { get; private set; }
+        public double ExcessPriceDivider { get; private set; }
+        public double MaxExcessPriceDivider { get; private set; }
+        public double UndesiredEffectiveExcess { get; private set; }
         public Dictionary<ResourceType, double> PopulationDemandes { get; }
         public Dictionary<string, TerrainType> TerrainTypes { get; }
         public Dictionary<string, ResourceType> ResourceTypes { get; }
         public Dictionary<string, TerrainFeautre> MapFeautreTypes { get; }
         public Dictionary<string, CollectorType> CollectorTypes { get; }
         public Dictionary<string, BuildingType> BuildingTypes { get; }
-
 
         public Configuration(string configurationFile)
         {
@@ -55,10 +59,14 @@ namespace TradeMapGame
 
         private void BuildConstants(JToken constantsJson)
         {
-            MinMovementDifficultyModifier = constantsJson.Value<double>("MinMovementDifficultyModifier");
             MoneyResource = constantsJson.Value<string>("MoneyResource");
             DefaultTerrain = constantsJson.Value<string>("DefaultTerrain");
             DesiredReserveTurns = constantsJson.Value<double>("DesiredReserveTurns");
+            ChanceToCreateCollector = constantsJson.Value<double>("ChanceToCreateCollector");
+            ExpansionDelay = constantsJson.Value<int>("ExpansionDelay");
+            StarvePriceMultiply = constantsJson.Value<double>("StarvePriceMultiply");
+            ExcessPriceDivider = constantsJson.Value<double>("ExcessPriceDivider");
+            UndesiredEffectiveExcess = constantsJson.Value<double>("UndesiredEffectiveExcess");
         }
 
         private void BuildResources(JToken resourceListJson)
@@ -66,7 +74,9 @@ namespace TradeMapGame
             foreach (var resourceJson in resourceListJson)
             {
                 string id = resourceJson.Value<string>("Id");
-                var resourceType = new ResourceType(id);
+                double basePrice = resourceJson.Value<double>("BasePrice");
+                double decayRate = resourceJson.Value<double>("DecayRate");
+                var resourceType = new ResourceType(id, basePrice, decayRate);
                 ResourceTypes.Add(id, resourceType);
             }
         }
@@ -182,11 +192,16 @@ namespace TradeMapGame
 
         private void BuildPopDemands(JToken demandsListJson)
         {
+            foreach(var resource in ResourceTypes)
+            {
+                PopulationDemandes.Add(resource.Value, 0);
+            }
+
             foreach (var demandJson in demandsListJson)
             {
                 ResourceType resource = ResourceTypes[demandJson.Value<string>("Resource")];
                 double amount = demandJson.Value<double>("Amount");
-                PopulationDemandes.Add(resource, amount);
+                PopulationDemandes[resource] = amount;
             }
         }
     }
