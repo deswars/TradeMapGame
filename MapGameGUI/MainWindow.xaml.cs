@@ -30,7 +30,7 @@ namespace MapGame.GUI
 
             Configuration conf = new Configuration("exampleConfig.json");
 
-            _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", conf);
+            _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", "exampleMapFeautres.bmp", conf);
             Map map = _engine.Map;
 
             int scale = 7;
@@ -39,11 +39,16 @@ namespace MapGame.GUI
             int height = map.Height * scale;
             Dictionary<string, Color> terrainColors = new();
             terrainColors.Add("t_plains", Colors.Green);
-            terrainColors.Add("t_hills", Colors.Yellow);
-            terrainColors.Add("t_mountains", Colors.Red);
+            terrainColors.Add("t_hills", Colors.Orange);
+            terrainColors.Add("t_mountains", Colors.DarkGray);
+
+            Dictionary<string, Color> feautreColors = new();
+            feautreColors.Add("f_forest", Colors.DarkGreen);
+            feautreColors.Add("f_gold", Colors.Yellow);
+            feautreColors.Add("f_metal", Colors.Brown);
 
             Color settlementColor = Colors.Red;
-            Color settlementBorder = Colors.White;
+            Color settlementBorder = Colors.Black;
 
             _writeableBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr32, null);
             iMap.Source = _writeableBitmap;
@@ -55,7 +60,13 @@ namespace MapGame.GUI
                 for (int k = 0; k < map.Height; k++)
                 {
                     var color = terrainColors[map[i, k].Terrain.Id];
-                    DrawRectangle(_writeableBitmap, i * scale + 1, k * scale + 1, scale - 2, scale - 2, color);
+                    DrawRectangle(_writeableBitmap, i * scale, k * scale, scale, scale, color);
+
+                    if (map[i, k].MapFeautres.Count > 0)
+                    {
+                        var fcolor = feautreColors[map[i, k].MapFeautres[0].Id];
+                        DrawRectangle(_writeableBitmap, i * scale + 1, k * scale + 1, scale - 2, scale - 2, fcolor);
+                    }
                 }
             }
             foreach (var settlement in _engine.Settlements)

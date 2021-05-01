@@ -13,27 +13,56 @@
       "Color": 65280
     }
   ],
+  "MapFeautreColors": [
+    {
+      "Feautre": "",
+      "Color": 0
+    },
+    {
+      "Feautre": "f_forest",
+      "Color": 255
+    },
+    {
+      "Feautre": "f_gold",
+      "Color": 65280
+    },
+    {
+      "Feautre": "f_metal",
+      "Color": 16711680
+    }
+  ],    
   "Settlemets": [
     {
       "Position": {
         "X": 1,
         "Y": 1
       },
-      "GatherPower": 1
+      "GatherPower": 1,
+      "Population": 5
     },
     {
       "Position": {
-        "X": 4,
-        "Y": 3
+        "X": 8,
+        "Y": 1
       },
-      "GatherPower": 1
+      "GatherPower": 1,
+      "Population": 1
     },
     {
       "Position": {
-        "X": 2,
+        "X": 1,
+        "Y": 8
+      },
+      "GatherPower": 1,
+      "Population": 5
+    },
+    {
+      "Position": {
+        "X": 7,
         "Y": 7
       },
-      "GatherPower": 1
+      "GatherPower": 1,
+      "Population": 5
     }
   ]
 }

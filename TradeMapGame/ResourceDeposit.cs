@@ -3,14 +3,12 @@
     public class ResourceDeposit
     {
         public ResourceType Type { get; }
-        public double Difficulty { get; }
         public double Richness { get; }
 
 
-        public ResourceDeposit(ResourceType type, double difficulty, double richness)
+        public ResourceDeposit(ResourceType type, double richness)
         {
             Type = type;
-            Difficulty = difficulty;
             Richness = richness;
         }
     }
