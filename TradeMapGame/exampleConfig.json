@@ -100,15 +100,15 @@
       "Resources": [
         {
           "Resource": "r_grain",
-          "Richness": 7
+          "Richness": 6
         },
         {
           "Resource": "r_meat",
-          "Richness": 3
+          "Richness": 2
         },
         {
           "Resource": "r_cotton",
-          "Richness": 5
+          "Richness": 3
         }
       ]
     },
@@ -121,7 +121,7 @@
         },
         {
           "Resource": "r_meat",
-          "Richness": 5
+          "Richness": 3
         },
         {
           "Resource": "r_cotton",
@@ -134,7 +134,7 @@
       "Resources": [
         {
           "Resource": "r_stone",
-          "Richness": 20
+          "Richness": 10
         }
       ]
     }
@@ -145,7 +145,7 @@
       "Resources": [
         {
           "Resource": "r_wood",
-          "Richness": 10
+          "Richness": 5
         },
         {
           "Resource": "r_meat",
@@ -171,7 +171,7 @@
       "Resources": [
         {
           "Resource": "r_metal",
-          "Richness": 20
+          "Richness": 10
         }
       ]
     }

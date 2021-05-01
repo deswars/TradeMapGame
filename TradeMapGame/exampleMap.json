@@ -30,7 +30,7 @@
       "Feautre": "f_metal",
       "Color": 16711680
     }
-  ],    
+  ],
   "Settlemets": [
     {
       "Position": {
@@ -57,6 +57,13 @@
       "Position": {
         "X": 7,
         "Y": 7
+      },
+      "Population": 5
+    },
+    {
+      "Position": {
+        "X": 2,
+        "Y": 4
       },
       "Population": 5
     }

@@ -132,7 +132,7 @@ namespace TradeMapGame
 
         private void GrowPopulation(Settlement settlement)
         {
-            if (_conf.GrowthDemand.All(res => res.Value < settlement.Resources[res.Key]))
+            if (_conf.GrowthDemand.All(res => res.Value * settlement.Population < settlement.Resources[res.Key]))
             {
                 settlement.Population++;
                 foreach (var resource in _conf.GrowthDemand)
