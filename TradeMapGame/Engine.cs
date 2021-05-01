@@ -32,11 +32,14 @@ namespace TradeMapGame
                 {
                     ExpandSettlement(settlement);
                 }
-                GatherResources(settlement);
                 GrowPopulation(settlement);
-                UpdatePrices(settlement);
             }
             TradeGoods();
+            foreach (var settlement in Settlements)
+            {
+                GatherResources(settlement);
+                UpdatePrices(settlement);
+            }
             Turn++;
         }
 
@@ -128,6 +131,7 @@ namespace TradeMapGame
         {
             Log.Write("Settlement {" + settlement.Position.X + ";" + settlement.Position.Y + "} gathered resources");
             settlement.GatherResource();
+            settlement.Resources[_conf.MoneyResource] += _conf.TaxPerPop * settlement.Population;
         }
 
         private void GrowPopulation(Settlement settlement)
@@ -148,7 +152,7 @@ namespace TradeMapGame
             var consumption = settlement.GetResourceConsumption();
             foreach (var resource in settlement.Resources)
             {
-                if (resource.Key != _conf.ResourceTypes[_conf.MoneyResource])
+                if (resource.Key != _conf.MoneyResource)
                 {
                     var resourceDesiredBalance = resource.Value - consumption[resource.Key] * _conf.DesiredReserveTurns;
                     double resourceRelativeBalance;
@@ -216,7 +220,7 @@ namespace TradeMapGame
 
         private void TradeGoodsFrom(Settlement source, Settlement destination, Dictionary<ResourceType, double> consumption)
         {
-            var moneyResource = _conf.ResourceTypes[_conf.MoneyResource];
+            var moneyResource = _conf.MoneyResource;
             if (destination.Resources[moneyResource] == 0)
             {
                 return;

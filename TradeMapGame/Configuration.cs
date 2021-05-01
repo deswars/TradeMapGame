@@ -6,7 +6,8 @@ namespace TradeMapGame
 {
     public class Configuration
     {
-        public string MoneyResource { get; private set; }
+        public string MoneyResourceId { get; private set; }
+        public ResourceType MoneyResource { get; private set; }
         public string DefaultTerrain { get; private set; }
         public double DesiredReserveTurns { get; private set; }
         public double ChanceToCreateCollector { get; private set; }
@@ -17,6 +18,7 @@ namespace TradeMapGame
         public double UndesiredEffectiveExcess { get; private set; }
         public double MinPrice { get; private set; }
         public double MaxPrice { get; private set; }
+        public double TaxPerPop { get; private set; }
         public Dictionary<string, TerrainType> TerrainTypes { get; }
         public Dictionary<string, ResourceType> ResourceTypes { get; }
         public Dictionary<string, TerrainFeautre> MapFeautreTypes { get; }
@@ -43,6 +45,7 @@ namespace TradeMapGame
 #pragma warning disable CA1507 // Use nameof to express symbol names
             JArray resourceListJson = (JArray)inputJson["ResourceTypes"];
             BuildResources(resourceListJson);
+            MoneyResource = ResourceTypes[MoneyResourceId];
 
             JArray terrainListJson = (JArray)inputJson["TerrainTypes"];
             BuildTerrainType(terrainListJson);
@@ -63,7 +66,7 @@ namespace TradeMapGame
 
         private void BuildConstants(JToken constantsJson)
         {
-            MoneyResource = constantsJson.Value<string>("MoneyResource");
+            MoneyResourceId = constantsJson.Value<string>("MoneyResource");
             DefaultTerrain = constantsJson.Value<string>("DefaultTerrain");
             DesiredReserveTurns = constantsJson.Value<double>("DesiredReserveTurns");
             ChanceToCreateCollector = constantsJson.Value<double>("ChanceToCreateCollector");
@@ -74,6 +77,7 @@ namespace TradeMapGame
             MaxExcessPriceDivider = constantsJson.Value<double>("MaxExcessPriceDivider");
             MinPrice = constantsJson.Value<double>("MinPrice");
             MaxPrice = constantsJson.Value<double>("MaxPrice");
+            TaxPerPop = constantsJson.Value<double>("TaxPerPop");
         }
 
         private void BuildResources(JToken resourceListJson)

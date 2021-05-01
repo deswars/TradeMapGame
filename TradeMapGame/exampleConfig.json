@@ -10,7 +10,8 @@
     "ChanceToCreateCollector": 0.75,
     "ExpansionDelay": 5,
     "MinPrice": 0.01,
-    "MaxPrice": 1000
+    "MaxPrice": 1000,
+    "TaxPerPop": 0.1
   },
   "ResourceTypes": [
     {
@@ -69,12 +70,12 @@
       {
         "Resource": "r_grain",
         "Amount": 1,
-        "Growth": 100
+        "Growth": 20
       },
       {
         "Resource": "r_meat",
         "Amount": 1,
-        "Growth": 100
+        "Growth": 20
       },
       {
         "Resource": "r_plank",
@@ -100,7 +101,7 @@
       "Resources": [
         {
           "Resource": "r_grain",
-          "Richness": 6
+          "Richness": 8
         },
         {
           "Resource": "r_meat",
@@ -162,7 +163,7 @@
       "Resources": [
         {
           "Resource": "r_money",
-          "Richness": 100
+          "Richness": 10
         }
       ]
     },
