@@ -25,6 +25,7 @@ namespace TradeMapGame
             MapFeautreTypes = new();
             CollectorTypes = new();
             BuildingTypes = new();
+            PopulationDemandes = new();
 
             string configurationJson = File.ReadAllText(configurationFile);
             var inputJson = JObject.Parse(configurationJson);
