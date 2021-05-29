@@ -72,6 +72,7 @@ namespace TradeMapGame.Services
                     cur[res.Key] = 0;
                 }
             }
+            cur.Filter(coll.Type.Collected);
             delta.Add(cur);
         }
 
