@@ -1,11 +1,11 @@
-﻿using TradeMapGame.Log;
+﻿using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 
 namespace TradeMapGame.Services
 {
     public class ServiceResourceDecay
     {
-        public ServiceResourceDecay(TurnLog? log)
+        public ServiceResourceDecay(TurnLogImpl? log)
         {
             _log = log;
         }
@@ -31,6 +31,6 @@ namespace TradeMapGame.Services
             }
         }
 
-        private readonly TurnLog? _log;
+        private readonly TurnLogImpl? _log;
     }
 }

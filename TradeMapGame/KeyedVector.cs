@@ -113,7 +113,7 @@ namespace TradeMapGame
             var result = Clone();
             foreach (var pair in this)
             {
-                result.Dict[pair.Key] -= pair.Value;
+                result.Dict[pair.Key] = -pair.Value;
             }
             return result;
         }

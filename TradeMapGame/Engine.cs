@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using TradeMapGame.Configuration;
-using TradeMapGame.Log;
+using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 
 namespace TradeMapGame
@@ -17,11 +17,11 @@ namespace TradeMapGame
         public SquareDiagonalMap Map { get; }
         public List<Settlement> Settlements { get; }
         public int Turn { get; private set; }
-        public TurnLog? Log { get; }
+        public TurnLogImpl? Log { get; }
         public Constants Consts { get; }
         public TypeRepository Lists { get; }
 
-        public Engine(SquareDiagonalMap map, ConfigurationLoader configuration, TurnLog? log)
+        public Engine(SquareDiagonalMap map, ConfigurationLoader configuration, TurnLogImpl? log)
         {
             Map = map;
             Settlements = new();

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGameConfig", "Trade
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGameLocalization", "TradeMapGameLocalization\TradeMapGameLocalization.csproj", "{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGameTests", "TradeMapGameTests\TradeMapGameTests.csproj", "{CD3FC881-632C-4A15-82F6-5DAABD02F916}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD3FC881-632C-4A15-82F6-5DAABD02F916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD3FC881-632C-4A15-82F6-5DAABD02F916}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD3FC881-632C-4A15-82F6-5DAABD02F916}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD3FC881-632C-4A15-82F6-5DAABD02F916}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

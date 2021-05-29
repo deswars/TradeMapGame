@@ -1,6 +1,6 @@
 ﻿using System;
 using TradeMapGame.Configuration;
-using TradeMapGame.Log;
+using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 using TradeMapGame.Services;
 
@@ -8,7 +8,7 @@ namespace TradeMapGame
 {
     public static class EngineBuilder
     {
-        public static Engine Build(SquareDiagonalMap map, ConfigurationLoader conf, TurnLog log)
+        public static Engine Build(SquareDiagonalMap map, ConfigurationLoader conf, TurnLogImpl log)
         {
             Random rnd = new();
             Engine eng = new(map, conf, log);
@@ -20,6 +20,7 @@ namespace TradeMapGame
             eng.OnPreTurn += gather.BuildingsProduceResources;
 
             return eng;
+            //TODO finish all steps
 
             //Log.SetTurn(Turn);
             //foreach (var settlement in Settlements)

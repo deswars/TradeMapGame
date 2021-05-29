@@ -1,11 +1,11 @@
-﻿using TradeMapGame.Log;
+﻿using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 
 namespace TradeMapGame.Services
 {
     public class ServiceGatherResource
     {
-        public ServiceGatherResource(TurnLog? log)
+        public ServiceGatherResource(TurnLogImpl? log)
         {
             _log = log;
         }
@@ -81,6 +81,6 @@ namespace TradeMapGame.Services
             delta.Sub(build.Type.Output);
         }
 
-        private readonly TurnLog? _log;
+        private readonly TurnLogImpl? _log;
     }
 }

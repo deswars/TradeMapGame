@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using TradeMapGame.Log;
+using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 using Point = TradeMapGame.Map.Point;
 
@@ -54,7 +54,7 @@ namespace TradeMapGame
                 }
             }
 
-            Engine engine = EngineBuilder.Build(map, conf, new TurnLog());
+            Engine engine = EngineBuilder.Build(map, conf, new TurnLogImpl());
             foreach (var settlementJson in mapConfJson["Settlemets"])
             {
                 int x = settlementJson["Position"].Value<int>("X");
