@@ -18,7 +18,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TradeMapGameConfig\TradeMapGameConfig.csproj" />
     <ProjectReference Include="..\TradeMapGame\TradeMapGame.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="exampleMap.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="exampleMap.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="exampleMapFeautres.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

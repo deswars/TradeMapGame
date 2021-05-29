@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace TradeMapGame
+namespace TradeMapGame.Map
 {
-    public class Map
+    public class SquareDiagonalMap : IMap
     {
         public int Width { get; }
         public int Height { get; }
@@ -12,17 +12,16 @@ namespace TradeMapGame
             get { return _map[column, row]; }
         }
 
-
-        public Map(int width, int height, TerrainType defaultTerrain)
+        public SquareDiagonalMap(int width, int height, TerrainType defaultTerrain)
         {
             Width = width;
             Height = height;
             _map = new Cell[width, height];
-            for (int i = 0; i < height; i++)
+            for (int i = 0; i < width; i++)
             {
                 for (int k = 0; k < height; k++)
                 {
-                    _map[i, k] = new Cell(defaultTerrain);
+                    _map[i, k] = new Cell(defaultTerrain, new Point(i, k));
                 }
             }
         }
@@ -50,15 +49,15 @@ namespace TradeMapGame
             {
                 neighborList.Add(_map[column - 1, row - 1]);
             }
-            if (column > 0 && (row < Height - 1))
+            if (column > 0 && row < Height - 1)
             {
                 neighborList.Add(_map[column - 1, row + 1]);
             }
-            if ((column < Width - 1) && row > 0)
+            if (column < Width - 1 && row > 0)
             {
                 neighborList.Add(_map[column + 1, row - 1]);
             }
-            if ((column < Width - 1) && (row < Height - 1))
+            if (column < Width - 1 && row < Height - 1)
             {
                 neighborList.Add(_map[column + 1, row + 1]);
             }

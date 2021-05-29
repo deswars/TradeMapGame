@@ -1,0 +1,37 @@
+﻿[
+  {
+    "Tier": 1,
+    "Demands": [
+      {
+        "Resource": "r_food",
+        "Amount": 1
+      }
+    ]
+  },
+  {
+    "Tier": 2,
+    "Demands": [
+      {
+        "Resource": "r_food",
+        "Amount": 1
+      },
+      {
+        "Resource": "r_wood",
+        "Amount": 1
+      },
+      {
+        "Resource": "r_stone",
+        "Amount": 1
+      }
+    ]
+  },
+  {
+    "Tier": 3,
+    "Demands": [
+      {
+        "Resource": "r_plank",
+        "Amount": 1
+      }
+    ]
+  }
+]

@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace TradeMapGame
+namespace TradeMapGame.Map
 {
-    public class TerrainType
+    public class TerrainFeautre
     {
         public string Id { get; }
         public List<ResourceDeposit> Resources { get; }
 
 
-        public TerrainType(string id, IEnumerable<ResourceDeposit> resources)
+        public TerrainFeautre(string id, IEnumerable<ResourceDeposit> resources)
         {
             Id = id;
 

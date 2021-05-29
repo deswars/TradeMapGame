@@ -5,7 +5,11 @@ VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapGameGUI", "MapGameGUI\MapGameGUI.csproj", "{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGame", "TradeMapGame\TradeMapGame.csproj", "{776FEAAB-A61D-421C-A9A6-F21F4296320E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapGame", "TradeMapGame\TradeMapGame.csproj", "{776FEAAB-A61D-421C-A9A6-F21F4296320E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGameConfig", "TradeMapGameConfig\TradeMapGameConfig.csproj", "{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapGameLocalization", "TradeMapGameLocalization\TradeMapGameLocalization.csproj", "{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

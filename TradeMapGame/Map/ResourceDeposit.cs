@@ -1,4 +1,4 @@
-﻿namespace TradeMapGame
+﻿namespace TradeMapGame.Map
 {
     public class ResourceDeposit
     {

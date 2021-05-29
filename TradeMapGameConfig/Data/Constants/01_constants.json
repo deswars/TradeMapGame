@@ -1,0 +1,13 @@
+﻿{
+  "MoneyResource": "r_money",
+  "DefaultTerrain": "t_plains",
+  "MinPrice": 0.01,
+  "MaxPrice": 1000,
+  "TaxPerPop": 0.1,
+  "MaxPopTier": 3,
+  "TierLevelLimit": 100,
+  "TierLevelUpStep": 10,
+  "TierLevelUpLimit": 0.9,
+  "TierLevelDownStep": 10,
+  "TierLevelDownLimit": 0.5
+}

@@ -1,0 +1,20 @@
+﻿[
+  {
+    "Id": "t_plains",
+    "Resources": [
+      {
+        "Resource": "r_food",
+        "Richness": 2
+      }
+    ]
+  },
+  {
+    "Id": "t_mountains",
+    "Resources": [
+      {
+        "Resource": "r_stone",
+        "Richness": 2
+      }
+    ]
+  }
+]

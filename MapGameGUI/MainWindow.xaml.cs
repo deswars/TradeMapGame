@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using TradeMapGame;
+using TradeMapGame.Configuration;
+using TradeMapGame.Localization;
+using TradeMapGame.Map;
 
 namespace MapGame.GUI
 {
@@ -23,6 +27,7 @@ namespace MapGame.GUI
         private readonly int _scale = 7;
         private Color _settlementColor = Colors.Red;
         private Color _settlementBorder = Colors.Black;
+        private readonly TextLocalizer textLocalizer = new();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -33,10 +38,11 @@ namespace MapGame.GUI
             m.ScaleAt(5, 5, 0, 0);
             iMap.LayoutTransform = new MatrixTransform(m);
 
-            Configuration conf = new("exampleConfig.json");
+            ConfigurationLoader conf = new();
+            conf.Load(new DirectoryInfo("Data"));
 
             _engine = GameBuilder.BuildMap("exampleMap.json", "exampleMap.bmp", "exampleMapFeautres.bmp", conf);
-            Map map = _engine.Map;
+            var map = _engine.Map;
 
             int width = map.Width * _scale;
             int height = map.Height * _scale;
@@ -56,7 +62,7 @@ namespace MapGame.GUI
 
         private void DrawMap()
         {
-            Map map = _engine.Map;
+            SquareDiagonalMap map = _engine.Map;
             _writeableBitmap.Lock();
             for (int i = 0; i < map.Width; i++)
             {
@@ -164,10 +170,10 @@ namespace MapGame.GUI
         private void WriteLog()
         {
             tbLog.Text = "";
-            var log = _engine.Log.GetLastTurnLog();
-            foreach ( var str in log)
+            var logEntries = _engine.Log.Entries;
+            foreach (var entry in logEntries)
             {
-                tbLog.Text += str + "\n";
+                tbLog.Text += entry.ToText(textLocalizer) + "\n";
             }
         }
     }

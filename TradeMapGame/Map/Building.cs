@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
-namespace TradeMapGame
+namespace TradeMapGame.Map
 {
     public class Building
     {
         public Settlement Owner { get; }
         public BuildingType Type { get; }
 
-
         public Building(Settlement owner, BuildingType type)
         {
             Owner = owner;
             Type = type;
         }
-
 
         public void Produce()
         {

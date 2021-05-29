@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TradeMapGame
+﻿namespace TradeMapGame.Map
 {
     public class Collector
     {
@@ -8,14 +6,12 @@ namespace TradeMapGame
         public Cell Location { get; }
         public CollectorType Type { get; }
 
-
         public Collector(Cell location, CollectorType type, Settlement owner)
         {
             Owner = owner;
             Location = location;
             Type = type;
         }
-
 
         public void Collect()
         {
