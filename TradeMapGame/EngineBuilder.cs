@@ -1,8 +1,8 @@
 ﻿using System;
 using TradeMapGame.Configuration;
-using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
 using TradeMapGame.Services;
+using TradeMapGame.TurnLog;
 
 namespace TradeMapGame
 {

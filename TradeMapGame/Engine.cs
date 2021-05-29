@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using TradeMapGame.Configuration;
-using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
+using TradeMapGame.TurnLog;
 
 namespace TradeMapGame
 {

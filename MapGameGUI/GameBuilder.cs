@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
+using TradeMapGame.TurnLog;
 using Point = TradeMapGame.Map.Point;
 
 namespace TradeMapGame

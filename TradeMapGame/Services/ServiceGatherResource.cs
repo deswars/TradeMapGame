@@ -1,5 +1,5 @@
-﻿using TradeMapGame.TurnLog;
-using TradeMapGame.Map;
+﻿using TradeMapGame.Map;
+using TradeMapGame.TurnLog;
 
 namespace TradeMapGame.Services
 {

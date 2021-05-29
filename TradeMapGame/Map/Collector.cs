@@ -12,18 +12,5 @@
             Location = location;
             Type = type;
         }
-
-        public void Collect()
-        {
-            var resources = Owner.Resources;
-            foreach (var collectable in Type.Collected)
-            {
-                double richness = Location.GetRichness(collectable);
-                if (richness > 0)
-                {
-                    resources[collectable] += richness;
-                }
-            }
-        }
     }
 }
