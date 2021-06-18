@@ -3,7 +3,7 @@ using TradeMapGame.Localization;
 
 namespace TradeMapGame.TurnLog
 {
-    class LogEntryTurn : ILogEntry
+    public class LogEntryTurn : ILogEntry
     {
         public LogEntryTurn(int turn)
         {

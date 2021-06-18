@@ -4,7 +4,7 @@ using TradeMapGame.Map;
 
 namespace TradeMapGame.TurnLog
 {
-    class LogEntryPostTurn : ILogEntry
+    public class LogEntryPostTurn : ILogEntry
     {
         public LogEntryPostTurn(int turn, Settlement settlement)
         {

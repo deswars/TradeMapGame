@@ -4,7 +4,7 @@ using TradeMapGame.Map;
 
 namespace TradeMapGame.TurnLog
 {
-    class LogEntryDecay : ILogEntry
+    public class LogEntryDecay : ILogEntry
     {
         public LogEntryDecay(int turn, Settlement settlement, KeyedVector<ResourceType> delta)
         {

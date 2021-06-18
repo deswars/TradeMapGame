@@ -4,7 +4,7 @@ using TradeMapGame.Map;
 
 namespace TradeMapGame.TurnLog
 {
-    class LogEntryProduce : ILogEntry
+    public class LogEntryProduce : ILogEntry
     {
         public LogEntryProduce(int turn, Settlement settlement, KeyedVector<ResourceType> delta)
         {
