@@ -1,7 +1,7 @@
-﻿using Xunit;
-using TradeMap.GameLog;
+﻿using Moq;
 using System.Linq;
-using Moq;
+using TradeMap.GameLog;
+using Xunit;
 
 namespace TradeMapTests.GameLog
 {
@@ -21,7 +21,7 @@ namespace TradeMapTests.GameLog
             Assert.Empty(log.Entries);
 
             isEntryCreated = false;
-            log.AddEntry(InfoLevels.Error , () => { isEntryCreated = true; return logEntry1; });
+            log.AddEntry(InfoLevels.Error, () => { isEntryCreated = true; return logEntry1; });
             Assert.Single(log.Entries);
             Assert.True(isEntryCreated);
 

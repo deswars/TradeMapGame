@@ -1,7 +1,7 @@
-﻿using Xunit;
-using TradeMap.Localization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
+using TradeMap.Localization;
+using Xunit;
 
 namespace TradeMapTests.Localization
 {
