@@ -35,7 +35,7 @@ namespace TradeMap.Di
         {
             ClearLists();
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
-            foreach(var assembly in assemblyList)
+            foreach (var assembly in assemblyList)
             {
                 var typeList = assembly.GetTypes().Where(type => type.GetCustomAttribute<ServiceAttribute>() != null);
                 foreach (var type in typeList)
@@ -87,7 +87,7 @@ namespace TradeMap.Di
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> CollectConstantDemands()
         {
             Dictionary<string, IReadOnlyDictionary<string, Constant>> result = new();
-            foreach(var serviceKV in _registeredServices)
+            foreach (var serviceKV in _registeredServices)
             {
                 result[serviceKV.Key] = serviceKV.Value.Constants;
             }
@@ -97,7 +97,7 @@ namespace TradeMap.Di
         public void CreateServicesAndSubscribeActions(Tdest dest, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
         {
             Dictionary<string, object> createdServices = new();
-            foreach(var subscribeElement in _subscribeOrder)
+            foreach (var subscribeElement in _subscribeOrder)
             {
                 TurnAction action = subscribeElement.Item1;
                 Service service = subscribeElement.Item2;
@@ -133,7 +133,7 @@ namespace TradeMap.Di
 
         private Service? GetServiceInfo(Type serviceType)
         {
-            if (serviceType.GetConstructor(new Type[] {typeof(IGameLog), typeof(TRepository)}) == null)
+            if (serviceType.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) }) == null)
             {
                 return null;
             }
@@ -207,7 +207,7 @@ namespace TradeMap.Di
                 return false;
             }
             for (int i = 0; i < delegateArgs.Length; i++)
-            { 
+            {
                 if (delegateArgs[i].ParameterType != actionArgs[i].ParameterType)
                 {
                     return false;
@@ -219,7 +219,7 @@ namespace TradeMap.Di
         private object CreateService(Service service)
         {
             Type type = service.ServiceType;
-            return type.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) })!.Invoke(new object?[] { _gameLog, _repository});
+            return type.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) })!.Invoke(new object?[] { _gameLog, _repository });
         }
 
         private static void InitializeConstants(object service, IReadOnlyDictionary<string, Constant> constantList)

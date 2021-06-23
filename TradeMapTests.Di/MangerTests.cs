@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using TradeMap.Di;
 using TradeMap.Di.GameLogEntry;
 using TradeMap.GameLog;
@@ -18,7 +17,7 @@ namespace TradeMapTests.Di
             log.SetInfoLevel(InfoLevels.All);
             GameLogImpl gameLog = new();
             TypeRepository repository = new();
-            Manager<EventHolder,TypeRepository> manager = new(log, gameLog, repository);
+            Manager<EventHolder, TypeRepository> manager = new(log, gameLog, repository);
 
             var actionList = manager.GetPossibleActions();
             Assert.Equal(3, actionList.Count);

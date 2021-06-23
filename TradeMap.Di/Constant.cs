@@ -5,8 +5,9 @@ namespace TradeMap.Di
     public class Constant
     {
         public string Name { get; }
-        public string Value { 
-            get 
+        public string Value
+        {
+            get
             {
                 return _value;
             }

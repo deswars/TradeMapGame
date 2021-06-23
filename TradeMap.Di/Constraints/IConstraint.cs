@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TradeMap.Di.Constraints
+﻿namespace TradeMap.Di.Constraints
 {
     public interface IConstraint
     {

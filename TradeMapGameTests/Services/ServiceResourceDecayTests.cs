@@ -1,8 +1,8 @@
-﻿using Xunit;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using TradeMapGame.TurnLog;
 using TradeMapGame.Map;
+using TradeMapGame.TurnLog;
+using Xunit;
 
 namespace TradeMapGame.Services.Tests
 {
@@ -18,7 +18,7 @@ namespace TradeMapGame.Services.Tests
             ResourceType res2 = new("r2", 1, 0.2);
             double res2Start = 20;
             KeyedVector<ResourceType> stored = new(new List<ResourceType> { res1, res2 }) { [res1] = res1Start, [res2] = res2Start };
-            Settlement settl = new Settlement("s", new Point(1, 1), 1, stored);
+            Settlement settl = new("s", new Point(1, 1), 1, stored);
 
             serv.DecayResources(1, settl);
 

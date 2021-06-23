@@ -1,6 +1,5 @@
-﻿using Xunit;
-using TradeMap.Di.Constraints;
-using System.Collections.Generic;
+﻿using TradeMap.Di.Constraints;
+using Xunit;
 
 namespace TradeMapTests.Di
 {
