@@ -2,18 +2,18 @@
 using TradeMap.GameLog;
 using TradeMap.Localization;
 
-namespace TradeMap.Di.GameLog
+namespace TradeMap.Di.GameLogEntry
 {
-    public class LogEntryConstantTypeError : ILogEntry
+    public class LogEntryReadOnlyProperty : BaseLogEntry
     {
-        public LogEntryConstantTypeError(string typeName, string serviceName, string constantName)
+        public LogEntryReadOnlyProperty(string typeName, string serviceName, string constantName)
         {
             _typeName = typeName;
             _serviceName = serviceName;
             _constantName = constantName;
         }
 
-        public string ToText(ITextLocalizer localizer)
+        public override string ToText(ITextLocalizer localizer)
         {
             Dictionary<string, object> param = new()
             {
@@ -21,7 +21,7 @@ namespace TradeMap.Di.GameLog
                 ["serviceName"] = _serviceName,
                 ["constantName"] = _constantName
             };
-            return localizer.Expand("[ConstantTypeError]", param);
+            return localizer.Expand("[ReadOnlyProperty]", param);
         }
 
         private readonly string _typeName;

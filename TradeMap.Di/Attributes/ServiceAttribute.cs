@@ -5,10 +5,7 @@ namespace TradeMap.Di.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public class ServiceAttribute : Attribute
     {
-        public string? Name { get; private set; }
-        public ServiceAttribute()
-        {
-        }
+        public string Name { get; }
 
         public ServiceAttribute(string name)
         {

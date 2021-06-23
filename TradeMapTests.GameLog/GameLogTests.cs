@@ -10,9 +10,9 @@ namespace TradeMapTests.GameLog
         [Fact()]
         public void AddEntryTest()
         {
-            var logEntry1 = Mock.Of<ILogEntry>(MockBehavior.Strict);
-            var logEntry2 = Mock.Of<ILogEntry>(MockBehavior.Strict);
-            var logEntry3 = Mock.Of<ILogEntry>(MockBehavior.Strict);
+            var logEntry1 = new Mock<ILogEntry>().SetupAllProperties();
+            var logEntry2 = new Mock<ILogEntry>().SetupAllProperties();
+            var logEntry3 = new Mock<ILogEntry>().SetupAllProperties();
             GameLogImpl log = new();
             InfoLevels level = InfoLevels.Error | InfoLevels.Warning;
             log.SetInfoLevel(level);
@@ -21,17 +21,19 @@ namespace TradeMapTests.GameLog
             Assert.Empty(log.Entries);
 
             isEntryCreated = false;
-            log.AddEntry(InfoLevels.Error, () => { isEntryCreated = true; return logEntry1; });
+            log.AddEntry(InfoLevels.Error, () => { isEntryCreated = true; return logEntry1.Object; });
             Assert.Single(log.Entries);
             Assert.True(isEntryCreated);
+            Assert.Equal(InfoLevels.Error, logEntry1.Object.InfoLevel);
 
             isEntryCreated = false;
-            log.AddEntry(InfoLevels.Info | InfoLevels.Warning, () => { isEntryCreated = true; return logEntry2; });
+            log.AddEntry(InfoLevels.Warning, () => { isEntryCreated = true; return logEntry2.Object; });
             Assert.Equal(2, log.Entries.Count());
             Assert.True(isEntryCreated);
+            Assert.Equal(InfoLevels.Warning, logEntry2.Object.InfoLevel);
 
             isEntryCreated = false;
-            log.AddEntry(InfoLevels.Info, () => { isEntryCreated = true; return logEntry3; });
+            log.AddEntry(InfoLevels.Info, () => { isEntryCreated = true; return logEntry3.Object; });
             Assert.Equal(2, log.Entries.Count());
             Assert.False(isEntryCreated);
         }
@@ -39,21 +41,21 @@ namespace TradeMapTests.GameLog
         [Fact()]
         public void FlushTest()
         {
-            var logEntry1 = Mock.Of<ILogEntry>(MockBehavior.Strict);
-            var logEntry2 = Mock.Of<ILogEntry>(MockBehavior.Strict);
-            var logEntry3 = Mock.Of<ILogEntry>(MockBehavior.Strict);
+            var logEntry1 = new Mock<ILogEntry>().SetupAllProperties();
+            var logEntry2 = new Mock<ILogEntry>().SetupAllProperties();
+            var logEntry3 = new Mock<ILogEntry>().SetupAllProperties();
             GameLogImpl log = new();
             InfoLevels level = InfoLevels.Error;
             log.SetInfoLevel(level);
 
-            log.AddEntry(InfoLevels.Error, () => logEntry1);
-            log.AddEntry(InfoLevels.Error, () => logEntry2);
+            log.AddEntry(InfoLevels.Error, () => logEntry1.Object);
+            log.AddEntry(InfoLevels.Error, () => logEntry2.Object);
             Assert.Equal(2, log.Entries.Count());
 
             log.Flush();
             Assert.Empty(log.Entries);
 
-            log.AddEntry(InfoLevels.Error, () => logEntry3);
+            log.AddEntry(InfoLevels.Error, () => logEntry3.Object);
             Assert.Single(log.Entries);
         }
     }

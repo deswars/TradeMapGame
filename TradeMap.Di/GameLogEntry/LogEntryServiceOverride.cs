@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using TradeMap.GameLog;
 using TradeMap.Localization;
 
-namespace TradeMap.Di.GameLog
+namespace TradeMap.Di.GameLogEntry
 {
-    public class LogEntryServiceOverride : ILogEntry
+    public class LogEntryServiceOverride : BaseLogEntry
     {
         public LogEntryServiceOverride(string serviceName, Type oldType, Type newType)
         {
@@ -14,7 +14,7 @@ namespace TradeMap.Di.GameLog
             _oldType = oldType;
         }
 
-        public string ToText(ITextLocalizer localizer)
+        public override string ToText(ITextLocalizer localizer)
         {
             Dictionary<string, object> param = new()
             {

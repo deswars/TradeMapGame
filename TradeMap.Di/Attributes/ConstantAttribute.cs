@@ -1,47 +1,27 @@
 ﻿using System;
+using TradeMap.Di.Constraints;
 
 namespace TradeMap.Di.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class ConstantAttribute : Attribute
     {
-        //TODO replace with constraints
-        public ValueTypes ValueType { get; private set; } = ValueTypes.None;
-        public string? Name { get; private set; }
-        public bool IsFullName { get; private set; } = false;
-        public string DefaultValue { get; private set; }
-
-        public ConstantAttribute(string defaultValue)
-        {
-            DefaultValue = defaultValue;
-        }
+        public string Name { get; }
+        public string DefaultValue { get; }
+        public IConstraint Constraint { get; }
 
         public ConstantAttribute(string defaultValue, string name)
         {
             Name = name;
             DefaultValue = defaultValue;
+            Constraint = new ConstraintAll();
         }
 
-        public ConstantAttribute(string defaultValue, string name, bool isFullName)
+        public ConstantAttribute(string defaultValue, string name, Type constraint, string constraintParam)
         {
             Name = name;
-            IsFullName = isFullName;
             DefaultValue = defaultValue;
-        }
-
-        public ConstantAttribute(string defaultValue, string name, ValueTypes valueType)
-        {
-            Name = name;
-            ValueType = valueType;
-            DefaultValue = defaultValue;
-        }
-
-        public ConstantAttribute(string defaultValue, string name, bool isFullName, ValueTypes valueType)
-        {
-            Name = name;
-            ValueType = valueType;
-            IsFullName = isFullName;
-            DefaultValue = defaultValue;
+            Constraint = ConstraintFactory.CreateConstraint(constraint, constraintParam);
         }
     }
 }

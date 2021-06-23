@@ -5,9 +5,9 @@ namespace TradeMap.GameLog
 {
     public interface IGameLog
     {
-        public IEnumerable<ILogEntry> Entries { get; }
-        public void AddEntry(InfoLevels entryLevel, Func<ILogEntry> entry);
-        public void Flush();
-        public void SetInfoLevel(InfoLevels includedLevel);
+        IEnumerable<ILogEntry> Entries { get; }
+        void AddEntry(InfoLevels entryLevel, Func<ILogEntry> entry);
+        void Flush();
+        void SetInfoLevel(InfoLevels includedLevel);
     }
 }

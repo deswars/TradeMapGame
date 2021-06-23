@@ -3,11 +3,11 @@
 namespace TradeMap.Di.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class SettlementActionAttribute : Attribute
+    public class TurnActionAttribute : Attribute
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public SettlementActionAttribute(string name)
+        public TurnActionAttribute(string name)
         {
             Name = name;
         }

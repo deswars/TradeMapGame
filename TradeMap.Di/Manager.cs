@@ -4,185 +4,232 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using TradeMap.Di.Attributes;
-using TradeMap.Di.GameLog;
+using TradeMap.Di.GameLogEntry;
 using TradeMap.GameLog;
 
 namespace TradeMap.Di
 {
-    public class Manager
+    public class Manager<Tdest, TRepository>
     {
         public const string NameDivisor = "-";
 
-        public Manager(IGameLog log)
+        public Manager(IGameLog managerLog, IGameLog gameLog, TRepository gameTypesRepository)
         {
-            _log = log;
-        }
+            _log = managerLog;
+            _gameLog = gameLog;
+            _repository = gameTypesRepository;
 
-        public IReadOnlyDictionary<string, Type> GetServiceList()
-        {
-            Dictionary<string, Type> result = new();
-            var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblyList)
+            EventInfo[] events = typeof(Tdest).GetEvents();
+            foreach (var ev in events)
             {
-                var typeList = assembly.GetTypes().Where(type => type.GetCustomAttribute<ServiceAttribute>() != null);
-                foreach (var type in typeList)
-                {
-                    ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>()!;
-                    var serviceName = GetServiceName(type, attribute);
-                    if (result.ContainsKey(serviceName))
-                    {
-                        _log.AddEntry(InfoLevels.Error, () => new LogEntryServiceOverride(serviceName, result[serviceName], type));
-                    }
-                    else
-                    {
-                        result.Add(serviceName, type);
-                    }
-                }
+                _possibleEvents[ev.Name] = ev;
             }
-            return result;
         }
 
-        public IReadOnlyDictionary<string, Tuple<Type, string>> GetServicConstantList()
+        public IReadOnlyDictionary<string, EventInfo> GetPossibleActions()
         {
-            Dictionary<string, Tuple<Type, string>> result = new();
+            return _possibleEvents;
+        }
+
+        public IReadOnlyDictionary<string, Service> CollectAllAvailableServices()
+        {
+            ClearLists();
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblyList)
+            foreach(var assembly in assemblyList)
             {
                 var typeList = assembly.GetTypes().Where(type => type.GetCustomAttribute<ServiceAttribute>() != null);
                 foreach (var type in typeList)
                 {
-                    ServiceAttribute attribute = type.GetCustomAttribute<ServiceAttribute>()!;
-                    var constantList = GetConstantList(type, attribute);
-                    foreach (var constantPair in constantList)
+                    var service = GetServiceInfo(type);
+                    if (service != null)
                     {
-                        if (result.ContainsKey(constantPair.Key))
+                        if (_availableServices.ContainsKey(service.Name))
                         {
-                            var oldConstant = result[constantPair.Key];
-                            if (constantPair.Value.Item1 != oldConstant.Item1)
-                            {
-                                _log.AddEntry(InfoLevels.Error, () => new LogEntryConstantOverride(constantPair.Key, true));
-                            }
-                            else
-                            {
-                                _log.AddEntry(InfoLevels.Warning, () => new LogEntryConstantOverride(constantPair.Key, false));
-                            }
-
+                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryServiceOverride(service.Name, _availableServices[service.Name].ServiceType, service.ServiceType));
                         }
-                        result[constantPair.Key] = constantPair.Value;
+                        _availableServices[service.Name] = service;
                     }
                 }
+            }
+            return _availableServices;
+        }
+
+        public bool TryRegisterTurnAction(string eventName, string serviceName, string actionName)
+        {
+            if (!_possibleEvents.ContainsKey(eventName))
+            {
+                return false;
+            }
+
+            EventInfo targetEvent = _possibleEvents[eventName];
+            if (!_availableServices.ContainsKey(serviceName))
+            {
+                return false;
+            }
+
+            Service targetService = _availableServices[serviceName];
+            if (!_availableServices[serviceName].Actions.ContainsKey(actionName))
+            {
+                return false;
+            }
+
+            TurnAction targetAction = targetService.Actions[actionName];
+            if (!IsActionTypeValid(targetEvent, targetAction))
+            {
+                return false;
+            }
+
+            _subscribeOrder.Enqueue(new Tuple<TurnAction, Service, string>(targetAction, targetService, eventName));
+            _registeredServices[targetService.Name] = targetService;
+            return true;
+        }
+
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> CollectConstantDemands()
+        {
+            Dictionary<string, IReadOnlyDictionary<string, Constant>> result = new();
+            foreach(var serviceKV in _registeredServices)
+            {
+                result[serviceKV.Key] = serviceKV.Value.Constants;
             }
             return result;
         }
 
-        public void GetServiceActionList()
+        public void CreateServicesAndSubscribeActions(Tdest dest, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
         {
-            //TODO DI service methods
-            throw new NotImplementedException();
-        }
+            Dictionary<string, object> createdServices = new();
+            foreach(var subscribeElement in _subscribeOrder)
+            {
+                TurnAction action = subscribeElement.Item1;
+                Service service = subscribeElement.Item2;
+                string eventName = subscribeElement.Item3;
 
-        public void AssignConstants()
-        {
-            //TODO DI constant assign
-            throw new NotImplementedException();
-        }
+                if (!createdServices.ContainsKey(service.Name))
+                {
+                    object newService = CreateService(service);
+                    Manager<Tdest, TRepository>.InitializeConstants(newService, constants[service.Name]);
+                    createdServices[service.Name] = newService;
+                }
 
-        public void BuildEngineTurn()
-        {
-            //TODO DI service build
-            throw new NotImplementedException();
+                EventInfo eventInfo = _possibleEvents[eventName];
+                var actionDelegate = Delegate.CreateDelegate(eventInfo.EventHandlerType!, createdServices[service.Name], action.Action);
+                eventInfo.AddEventHandler(dest, actionDelegate);
+            }
         }
 
         private readonly IGameLog _log;
+        private readonly IGameLog? _gameLog;
+        private readonly Dictionary<string, EventInfo> _possibleEvents = new();
+        private readonly TRepository _repository;
+        private readonly Dictionary<string, Service> _availableServices = new();
+        private readonly Dictionary<string, Service> _registeredServices = new();
+        private readonly Queue<Tuple<TurnAction, Service, string>> _subscribeOrder = new();
 
-        private IReadOnlyDictionary<string, Tuple<Type, string>> GetConstantList(Type serviceType, ServiceAttribute serviceAttribute)
+        private void ClearLists()
         {
-            Dictionary<string, Tuple<Type, string>> result = new();
+            _availableServices.Clear();
+            _registeredServices.Clear();
+            _subscribeOrder.Clear();
+        }
 
-            var constantList = serviceType.GetProperties().Where(property => property.GetCustomAttribute<ConstantAttribute>() != null);
-            foreach (var constant in constantList)
+        private Service? GetServiceInfo(Type serviceType)
+        {
+            if (serviceType.GetConstructor(new Type[] {typeof(IGameLog), typeof(TRepository)}) == null)
             {
-                ConstantAttribute attribute = constant.GetCustomAttribute<ConstantAttribute>()!;
+                return null;
+            }
+            string serviceName = serviceType.GetCustomAttribute<ServiceAttribute>()!.Name;
+            var constantList = GetConstantList(serviceType, serviceName);
+            if (constantList == null)
+            {
+                return null;
+            }
+            var actionList = Manager<Tdest, TRepository>.GetTurnActionList(serviceType);
+            if ((actionList == null) || !actionList.Any())
+            {
+                _log.AddEntry(InfoLevels.Warning, () => new LogEntryActionlessService(serviceName, serviceType));
+                return null;
+            }
+            return new Service(serviceName, serviceType, constantList, actionList);
+        }
 
-                string name = GetConstantName(constant, attribute, serviceType, serviceAttribute);
-                Type? constantType = GetConstantType(constant, attribute);
-                if (constantType != null)
+        private Dictionary<string, Constant>? GetConstantList(Type serviceType, string serviceName)
+        {
+            Dictionary<string, Constant> result = new();
+            var propertyList = serviceType.GetProperties().Where(property => property.GetCustomAttribute<ConstantAttribute>() != null);
+            foreach (var property in propertyList)
+            {
+                ConstantAttribute attribute = property.GetCustomAttribute<ConstantAttribute>()!;
+                string name = attribute.Name;
+                if (!property.CanWrite)
                 {
-                    result[name] = new Tuple<Type, string>(constantType, attribute.DefaultValue);
+                    _log.AddEntry(InfoLevels.Error, () => new LogEntryReadOnlyProperty(serviceType.Name, serviceName, name));
+                    return null;
                 }
-                else
+                if (!attribute.Constraint.Check(attribute.DefaultValue))
                 {
-                    _log.AddEntry(InfoLevels.Error, () => new LogEntryConstantTypeError(serviceType.Name, GetServiceName(serviceType, serviceAttribute), name));
+                    _log.AddEntry(InfoLevels.Error, () => new LogEntryDefaultValueConstraintError(serviceType.Name, serviceName, name, attribute.DefaultValue, attribute.Constraint));
+                    return null;
                 }
+                result[name] = new Constant(name, attribute.DefaultValue, attribute.Constraint);
             }
             return result;
         }
 
-        private static string GetConstantName(PropertyInfo constant, ConstantAttribute attribute, Type serviceType, ServiceAttribute serviceAttribute)
+        private static Dictionary<string, TurnAction>? GetTurnActionList(Type serviceType)
         {
-            string name;
-            if (attribute.Name == null)
+            Dictionary<string, TurnAction> result = new();
+            var methodList = serviceType.GetMethods().Where(property => property.GetCustomAttribute<TurnActionAttribute>() != null);
+            foreach (var method in methodList)
             {
-                name = constant.Name;
+                TurnActionAttribute attribute = method.GetCustomAttribute<TurnActionAttribute>()!;
+                result[attribute.Name] = new TurnAction(attribute.Name, method);
             }
-            else
-            {
-                name = attribute.Name;
-            }
-            if (!attribute.IsFullName)
-            {
-                name = GetServiceName(serviceType, serviceAttribute) + NameDivisor + name;
-            }
-            return name;
+            return result;
         }
 
-        private static string GetServiceName(Type serviceType, ServiceAttribute serviceAttribute)
+        private static bool IsActionTypeValid(EventInfo targetEvent, TurnAction targetAction)
         {
-            return serviceAttribute.Name ?? serviceType.Name;
-        }
-
-        private static Type? GetConstantType(PropertyInfo constant, ConstantAttribute attribute)
-        {
-            Type? constantType = constant.PropertyType;
-            if (attribute.ValueType != ValueTypes.None)
-            {
-                constantType = ConvertToType(attribute.ValueType);
-            }
-            bool isTypeValid = ValidateConstantType(constant, constantType);
-            bool isValueValid = ValidateConstantDefault(attribute.DefaultValue, constantType);
-            return isTypeValid && isValueValid ? constantType : null;
-        }
-
-        private static Type? ConvertToType(ValueTypes constantType)
-        {
-            return constantType switch
-            {
-                ValueTypes.Int => typeof(int),
-                ValueTypes.Double => typeof(double),
-                ValueTypes.String => typeof(string),
-                _ => null,
-            };
-        }
-
-        private static bool ValidateConstantType(PropertyInfo constant, Type? constantType)
-        {
-            return constant.PropertyType.IsAssignableFrom(constantType);
-        }
-
-        private static bool ValidateConstantDefault(string value, Type? constantType)
-        {
-            if (constantType == null)
+            var handlerType = targetEvent.EventHandlerType;
+            if (handlerType == null)
             {
                 return false;
             }
-            try
-            {
-                var res = Convert.ChangeType(value, constantType, CultureInfo.InvariantCulture);
-                return res != null;
-            }
-            catch
+            var delegateMethod = handlerType.GetMethod("Invoke")!;
+            var actionMethod = targetAction.Action;
+            if (delegateMethod.ReturnType != actionMethod.ReturnType)
             {
                 return false;
+            }
+            var delegateArgs = delegateMethod.GetParameters();
+            var actionArgs = actionMethod.GetParameters();
+            if (delegateArgs.Length != actionArgs.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < delegateArgs.Length; i++)
+            { 
+                if (delegateArgs[i].ParameterType != actionArgs[i].ParameterType)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private object CreateService(Service service)
+        {
+            Type type = service.ServiceType;
+            return type.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) })!.Invoke(new object?[] { _gameLog, _repository});
+        }
+
+        private static void InitializeConstants(object service, IReadOnlyDictionary<string, Constant> constantList)
+        {
+            var type = service.GetType();
+            foreach (var property in type.GetProperties().Where(prop => prop.GetCustomAttribute<ConstantAttribute>() != null))
+            {
+                ConstantAttribute attribute = property.GetCustomAttribute<ConstantAttribute>()!;
+                var value = Convert.ChangeType(constantList[attribute.Name].Value, property.PropertyType, CultureInfo.InvariantCulture);
+                property.SetValue(service, value);
             }
         }
     }

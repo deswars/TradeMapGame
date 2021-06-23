@@ -1,103 +1,120 @@
-﻿using Xunit;
-using TradeMap.Di;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using TradeMap.Di;
+using TradeMap.Di.GameLogEntry;
 using TradeMap.GameLog;
-using TradeMapTests.Di.ServiceStubs;
-using TradeMap.Di.GameLog;
+using TradeMapTests.Di.Stubs;
+using Xunit;
 
 namespace TradeMapTests.Di
 {
     public class MangerTests
     {
         [Fact()]
-        public void GetServiceListTest()
+        public void ManagerTest()
         {
             GameLogImpl log = new();
             log.SetInfoLevel(InfoLevels.All);
-            Manager man = new Manager(log);
+            GameLogImpl gameLog = new();
+            TypeRepository repository = new();
+            Manager<EventHolder,TypeRepository> manager = new(log, gameLog, repository);
 
-            var list = man.GetServiceList();
-            Assert.Equal(2, list.Count());
-            Assert.True(list.ContainsKey("SN"));
-            Assert.True(list.ContainsKey("ServiceUnnamed"));
-            Assert.Equal(typeof(ServiceNamed), list["SN"]);
-            Assert.Equal(typeof(ServiceUnnamed), list["ServiceUnnamed"]);
+            var actionList = manager.GetPossibleActions();
+            Assert.Equal(3, actionList.Count);
+            Assert.Equal(typeof(EventHolder).GetEvent("E1"), actionList["E1"]);
+            Assert.Equal(typeof(EventHolder).GetEvent("E2"), actionList["E2"]);
+            Assert.Equal(typeof(EventHolder).GetEvent("E3"), actionList["E3"]);
         }
 
         [Fact()]
-        public void GetServicConstantListTest()
+        public void CollectAllAvailableServicesTest()
         {
             GameLogImpl log = new();
             log.SetInfoLevel(InfoLevels.All);
-            Manager man = new Manager(log);
+            GameLogImpl gameLog = new();
+            TypeRepository repository = new();
+            Manager<EventHolder, TypeRepository> manager = new(log, gameLog, repository);
 
-            var list = man.GetServicConstantList();
-            Assert.Equal(10, list.Count());
-            Assert.Equal(6, log.Entries.Count());
-            Assert.Equal(4, log.Entries.Where(x => x.GetType() == typeof(LogEntryConstantTypeError)).Count());
-            Assert.Equal(2, log.Entries.Where(x => x.GetType() == typeof(LogEntryConstantOverride)).Count());
+            var list = manager.CollectAllAvailableServices();
+            Assert.Equal(3, list.Count);
+            Assert.True(list.ContainsKey("S1"));
+            Assert.False(list.ContainsKey("S2"));
+            Assert.False(list.ContainsKey("S3"));
+            Assert.True(list.ContainsKey("S5"));
+            Assert.True(list.ContainsKey("S6"));
 
-            Assert.Contains("ServiceUnnamed-C1", list);
-            Assert.Equal("1", list["ServiceUnnamed-C1"].Item2);
-            Assert.Equal(typeof(int), list["ServiceUnnamed-C1"].Item1);
-            
-            Assert.Contains("ServiceUnnamed-C-N", list);
-            Assert.Equal("2", list["ServiceUnnamed-C-N"].Item2);
-            Assert.Equal(typeof(int), list["ServiceUnnamed-C-N"].Item1);
-            
-            Assert.Contains("ServiceUnnamed-C-NF", list);
-            Assert.Equal("3", list["ServiceUnnamed-C-NF"].Item2);
-            Assert.Equal(typeof(int), list["ServiceUnnamed-C-NF"].Item1);
-            
-            Assert.Contains("ServiceUnnamed-C-N-TII", list);
-            Assert.Equal("4", list["ServiceUnnamed-C-N-TII"].Item2);
-            Assert.Equal(typeof(int), list["ServiceUnnamed-C-N-TII"].Item1);
-            
-            Assert.Contains("SN-C1", list);
-            Assert.Equal("1", list["SN-C1"].Item2);
-            Assert.Equal(typeof(int), list["SN-C1"].Item1);
-            
-            Assert.Contains("SN-C-N", list);
-            Assert.Equal("2", list["SN-C-N"].Item2);
-            Assert.Equal(typeof(int), list["SN-C-N"].Item1);
-            
-            Assert.Contains("SN-C-NF", list);
-            Assert.Equal("3", list["SN-C-NF"].Item2);
-            Assert.Equal(typeof(int), list["SN-C-NF"].Item1);
-
-
-            Assert.Contains("SN-C-N-TII", list);
-            Assert.Equal("4", list["SN-C-N-TII"].Item2);
-            Assert.Equal(typeof(int), list["SN-C-N-TII"].Item1);
-            
-            Assert.Contains("Common", list);
-            Assert.Equal("1", list["Common"].Item2);
-            Assert.Equal(typeof(string), list["Common"].Item1);
-
-            Assert.Contains("CommonD", list);
-            Assert.Equal(typeof(string), list["CommonD"].Item1);
+            Assert.Equal(3, log.Entries.Count());
+            Assert.Single(log.Entries.Where(x => x.GetType() == typeof(LogEntryServiceOverride)));
+            Assert.Single(log.Entries.Where(x => x.GetType() == typeof(LogEntryActionlessService)));
+            Assert.Single(log.Entries.Where(x => x.GetType() == typeof(LogEntryDefaultValueConstraintError)));
         }
 
         [Fact()]
-        public void GetServiceActionListTest()
+        public void RegisterTurnActionTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            GameLogImpl log = new();
+            log.SetInfoLevel(InfoLevels.All);
+            GameLogImpl gameLog = new();
+            TypeRepository repository = new();
+            Manager<EventHolder, TypeRepository> manager = new(log, gameLog, repository);
+            manager.CollectAllAvailableServices();
+
+            Assert.True(manager.TryRegisterTurnAction("E1", "S1", "A1"));
+            Assert.True(manager.TryRegisterTurnAction("E2", "S6", "A2"));
+            Assert.True(manager.TryRegisterTurnAction("E2", "S5", "A2"));
+            Assert.False(manager.TryRegisterTurnAction("E2", "S1", "A3"));
+            Assert.False(manager.TryRegisterTurnAction("error", "S1", "A1"));
+            Assert.False(manager.TryRegisterTurnAction("E1", "error", "A1"));
+            Assert.False(manager.TryRegisterTurnAction("E1", "S1", "error"));
         }
 
         [Fact()]
-        public void AssignConstantsTest()
+        public void CollectConstantDemandsTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            GameLogImpl log = new();
+            log.SetInfoLevel(InfoLevels.All);
+            GameLogImpl gameLog = new();
+            TypeRepository repository = new();
+            Manager<EventHolder, TypeRepository> manager = new(log, gameLog, repository);
+            manager.CollectAllAvailableServices();
+            manager.TryRegisterTurnAction("E1", "S1", "A1");
+            manager.TryRegisterTurnAction("E2", "S6", "A2");
+
+            var constants = manager.CollectConstantDemands();
+            Assert.Equal(2, constants.Count);
+            Assert.True(constants.ContainsKey("S1"));
+            Assert.True(constants.ContainsKey("S6"));
+            Assert.Equal(3, constants["S1"].Count);
+            Assert.Equal(3, constants["S6"].Count);
         }
 
         [Fact()]
-        public void BuildEngineTurnTest()
+        public void CreateServicesAndSubscribeActionsTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            GameLogImpl log = new();
+            log.SetInfoLevel(InfoLevels.All);
+            GameLogImpl gameLog = new();
+            TypeRepository repository = new();
+            Manager<EventHolder, TypeRepository> manager = new(log, gameLog, repository);
+            manager.CollectAllAvailableServices();
+            manager.TryRegisterTurnAction("E1", "S1", "A1");
+            manager.TryRegisterTurnAction("E1", "S6", "A1");
+            manager.TryRegisterTurnAction("E2", "S6", "A2");
+            var constants = manager.CollectConstantDemands();
+
+            constants["S1"]["C1"].Value = "abc";
+            constants["S1"]["C3"].Value = "10";
+
+            EventHolder eh = new();
+            manager.CreateServicesAndSubscribeActions(eh, constants);
+
+            Action e1 = eh.GetE1();
+            Assert.Equal(2, e1.GetInvocationList().Length);
+            Action<string> e2 = eh.GetE2();
+            Assert.Single(e2.GetInvocationList());
+            Action e3 = eh.GetE3();
+            Assert.Null(e3);
         }
     }
 }
