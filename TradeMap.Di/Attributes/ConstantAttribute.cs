@@ -5,6 +5,7 @@ namespace TradeMap.Di.Attributes
     [AttributeUsage(AttributeTargets.Property)]
     public class ConstantAttribute : Attribute
     {
+        //TODO replace with constraints
         public ValueTypes ValueType { get; private set; } = ValueTypes.None;
         public string? Name { get; private set; }
         public bool IsFullName { get; private set; } = false;

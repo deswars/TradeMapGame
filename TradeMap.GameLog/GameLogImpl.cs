@@ -11,7 +11,9 @@ namespace TradeMap.GameLog
         {
             if ((entryLevel & _includedLevels) != InfoLevels.None)
             {
-                _entries.Add(entry());
+                var newEntry = entry();
+                newEntry.InfoLevel = entryLevel;
+                _entries.Add(newEntry);
             }
         }
 
