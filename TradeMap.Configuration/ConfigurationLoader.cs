@@ -32,6 +32,7 @@ namespace TradeMap.Configuration
             //resource
             string resourceDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.ResourceTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
             var resources = LoadResources(resourceDataName);
+            KeyedVectorFull<ResourceType>.InitializeKeys(resources.Values);
 
             //terrain
             string terrainDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.TerrainTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
@@ -314,7 +315,7 @@ namespace TradeMap.Configuration
                         string id = buildingJson.Value<string>("Id")!;
 
                         List<ResourceType> inputResources = new();
-                        KeyedVector<ResourceType> input = new(resources.Values);
+                        KeyedVectorPartial<ResourceType> input = new KeyedVectorFull<ResourceType>();
                         var inputListJson = buildingJson["Input"]!;
                         foreach (var resourceJson in inputListJson)
                         {
@@ -326,7 +327,7 @@ namespace TradeMap.Configuration
                         input = input.FilterSmaller(inputResources);
 
                         List<ResourceType> outputResources = new();
-                        KeyedVector<ResourceType> output = new(resources.Values);
+                        KeyedVectorPartial<ResourceType> output = new KeyedVectorFull<ResourceType>();
                         var outputListJson = buildingJson["Output"]!;
                         foreach (var resourceJson in outputListJson)
                         {
@@ -353,10 +354,10 @@ namespace TradeMap.Configuration
             return buildings;
         }
 
-        private IReadOnlyDictionary<int, KeyedVector<ResourceType>> LoadPopDemands(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
+        private IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> LoadPopDemands(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
         {
             var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<int, KeyedVector<ResourceType>> demands = new();
+            Dictionary<int, KeyedVectorFull<ResourceType>> demands = new();
             foreach (var resourceDataFile in files)
             {
                 try
@@ -368,7 +369,7 @@ namespace TradeMap.Configuration
                     {
                         var tier = tierJson.Value<int>("Tier");
                         var demandsListJson = tierJson["Demands"]!;
-                        KeyedVector<ResourceType> tierDemands = new(new List<ResourceType>());
+                        KeyedVectorFull<ResourceType> tierDemands = new();
                         foreach (var demandJson in demandsListJson)
                         {
                             ResourceType resource = resources[demandJson.Value<string>("Resource")!];
@@ -385,14 +386,14 @@ namespace TradeMap.Configuration
             }
             if (!demands.ContainsKey(0))
             {
-                demands[0] = new KeyedVector<ResourceType>(new List<ResourceType>());
+                demands[0] = new KeyedVectorFull<ResourceType>();
             }
             int i = 1;
             while (i < demands.Count)
             {
                 if (!demands.ContainsKey(i))
                 {
-                    demands[i] = demands[i - 1];
+                    demands[i] = demands[i - 1].Clone();
                 }
                 i++;
             }

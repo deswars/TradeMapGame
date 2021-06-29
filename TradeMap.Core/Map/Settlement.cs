@@ -6,15 +6,15 @@ namespace TradeMap.Core.Map
     {
         public string Name { get; }
         public Point Position { get; }
-        public KeyedVector<ResourceType> Resources { get; }
-        public KeyedVector<ResourceType> Prices { get; }
+        public KeyedVectorFull<ResourceType> Resources { get; }
+        public KeyedVectorFull<ResourceType> Prices { get; }
         public int Population { get; set; }
         public List<Collector> Collectors { get; }
         public List<Building> Buildings { get; }
         public int Tier { get; set; }
         public double TierProgress { get; set; }
 
-        public Settlement(string name, Point position, int population, KeyedVector<ResourceType> resources)
+        public Settlement(string name, Point position, int population, KeyedVectorFull<ResourceType> resources)
         {
             Name = name;
             Position = position;
@@ -23,7 +23,7 @@ namespace TradeMap.Core.Map
 
             Collectors = new();
             Buildings = new();
-            Prices = Resources.Zeroed();
+            Prices = new();
             foreach (var resource in Resources)
             {
                 Prices[resource.Key] = resource.Key.BasePrice;

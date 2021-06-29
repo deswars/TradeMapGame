@@ -23,7 +23,7 @@ namespace TradeMap.Configuration
         public IReadOnlyDictionary<string, BuildingType> BuildingTypes { get; }
 
         [Type("Population")]
-        public IReadOnlyDictionary<int, KeyedVector<ResourceType>> PopulationDemands { get; }
+        public IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> PopulationDemands { get; }
 
         public TypeRepository(
             IReadOnlyDictionary<string, ResourceType> resourceTypes,
@@ -31,7 +31,7 @@ namespace TradeMap.Configuration
             IReadOnlyDictionary<string, TerrainFeautre> mapFeautreTypes, 
             IReadOnlyDictionary<string, CollectorType> collectorTypes, 
             IReadOnlyDictionary<string, BuildingType> buildingTypes, 
-            IReadOnlyDictionary<int, KeyedVector<ResourceType>> populationDemands)
+            IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> populationDemands)
         {
             ResourceTypes = resourceTypes;
             TerrainTypes = terrainTypes;
