@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TradeMap.Core.Map
 {
@@ -7,10 +8,20 @@ namespace TradeMap.Core.Map
         public int Width { get; }
         public int Height { get; }
 
-        public Cell this[int column, int row]
+        public ICell this[int column, int row]
         {
             get { return _map[column, row]; }
         }
+
+        public ICell this[Point position]
+        {
+            get { return _map[position.X, position.Y]; }
+        }
+
+        public IEnumerable<Settlement> Settlements {
+            get { return _settlements; }
+        }
+
 
         public SquareDiagonalMap(int width, int height, TerrainType defaultTerrain)
         {
@@ -26,9 +37,11 @@ namespace TradeMap.Core.Map
             }
         }
 
-        public IEnumerable<Cell> GetNeigborCells(int column, int row)
+        public IEnumerable<ICell> GetNeigborCells(Point position)
         {
-            var neighborList = new List<Cell>();
+            int column = position.X;
+            int row = position.Y;
+            var neighborList = new List<ICell>();
             if (column > 0)
             {
                 neighborList.Add(_map[column - 1, row]);
@@ -64,7 +77,30 @@ namespace TradeMap.Core.Map
             return neighborList;
         }
 
+        public bool AddSettlement(Settlement settlement)
+        {
+            if (_map[settlement.Position.X, settlement.Position.Y].Settlement == null)
+            {
+                _map[settlement.Position.X, settlement.Position.Y].Settlement = settlement;
+                _settlements.Add(settlement);
+                return true;
+            }
+            return false;
+        }
+
+        public bool RemoveSettlement(Settlement settlement)
+        {
+            if (_settlements.Contains(settlement))
+            {
+                _map[settlement.Position.X, settlement.Position.Y].Settlement = null;
+                _settlements.Remove(settlement);
+                return true;
+            }
+            return false;
+        }
+
         private readonly Cell[,] _map;
+        private readonly List<Settlement> _settlements = new();
     }
 
 }

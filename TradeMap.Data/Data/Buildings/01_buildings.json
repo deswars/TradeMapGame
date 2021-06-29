@@ -1,0 +1,17 @@
+﻿[
+  {
+    "Id": "b_sawmill",
+    "Input": [
+      {
+        "Resource": "r_wood",
+        "Amount": 5
+      }
+    ],
+    "Output": [
+      {
+        "Resource": "r_plank",
+        "Amount": 5
+      }
+    ]
+  }
+]

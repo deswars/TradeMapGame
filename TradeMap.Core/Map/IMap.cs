@@ -4,7 +4,11 @@ namespace TradeMap.Core.Map
 {
     public interface IMap
     {
-        public Cell this[int column, int row] { get; }
-        IEnumerable<Cell> GetNeigborCells(int column, int row);
+        ICell this[int column, int row] { get; }
+        ICell this[Point position] { get; }
+        IEnumerable<Settlement> Settlements { get; }
+        IEnumerable<ICell> GetNeigborCells(Point position);
+        bool AddSettlement(Settlement settlement);
+        bool RemoveSettlement(Settlement settlement);
     }
 }
