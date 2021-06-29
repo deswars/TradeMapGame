@@ -12,5 +12,10 @@ namespace TradeMap.Di.Constraints
         {
             return double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
+
+        public override string ToString()
+        {
+            return "Double";
+        }
     }
 }

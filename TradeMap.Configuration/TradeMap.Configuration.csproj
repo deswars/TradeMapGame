@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
+    <ProjectReference Include="..\TradeMap.Di\TradeMap.Di.csproj" />
+    <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -11,8 +11,6 @@ namespace TradeMap.Di
 {
     public class Manager<Tdest, TRepository>
     {
-        public const string NameDivisor = "-";
-
         public Manager(IGameLog managerLog, IGameLog gameLog, TRepository gameTypesRepository)
         {
             _log = managerLog;

@@ -36,6 +36,11 @@ namespace TradeMap.Di.Constraints
             return false;
         }
 
+        public override string ToString()
+        {
+            return $"Double, min = {_min}; max = {_max}" ;
+        }
+
         private readonly double _min;
         private readonly double _max;
     }

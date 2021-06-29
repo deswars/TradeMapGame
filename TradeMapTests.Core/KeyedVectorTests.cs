@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Xunit;
+using TradeMap.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xunit;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace TradeMapGame.Tests
+namespace TradeMapTests.Core
 {
     public class KeyedVectorTests
     {
-        [Fact]
+        [Fact()]
         public void KeyedVectorTest()
         {
             List<string> keys = new() { "a", "b", "c" };
@@ -140,6 +143,23 @@ namespace TradeMapGame.Tests
                 else
                 {
                     Assert.Equal(0, newVec[key]);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FilterVector))]
+        public void FilterSmallerTest(List<string> keys, KeyedVector<string> vec, List<string> filterKeys)
+        {
+            var originalVec = vec.Clone();
+            var newVec = vec.FilterSmaller(filterKeys);
+            Assert.Equal(filterKeys.Count, newVec.Count());
+            foreach (var key in keys)
+            {
+                Assert.Equal(originalVec[key], vec[key]);
+                if (filterKeys.Contains(key))
+                {
+                    Assert.Equal(vec[key], newVec[key]);
                 }
             }
         }
