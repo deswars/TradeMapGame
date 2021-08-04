@@ -3,8 +3,11 @@ using System.Collections.Generic;
 
 namespace TradeMap.Core
 {
-    public class KeyedVectorPartial<TIndex> : IEnumerable<KeyValuePair<TIndex, double>> where TIndex : notnull
+    public class KeyedVectorPartial<TIndex> : IReadOnlyKeyedVectorPartial<TIndex> where TIndex : notnull
     {
+        protected Dictionary<TIndex, double> Dict { get; private set; }
+
+
         public double this[TIndex index]
         {
             get
@@ -24,6 +27,7 @@ namespace TradeMap.Core
             }
         }
 
+
         protected KeyedVectorPartial(Dictionary<TIndex, double> initializer)
         {
             Dict = new(initializer);
@@ -33,6 +37,7 @@ namespace TradeMap.Core
         {
             Dict = new();
         }
+
 
         public IEnumerator<KeyValuePair<TIndex, double>> GetEnumerator()
         {
@@ -76,7 +81,5 @@ namespace TradeMap.Core
             }
             return result;
         }
-
-        protected Dictionary<TIndex, double> Dict { get; private set; }
     }
 }

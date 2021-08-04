@@ -2,13 +2,17 @@
 
 namespace TradeMap.Core
 {
-    public class KeyedVectorFull<TIndex> : KeyedVectorPartial<TIndex> where TIndex : notnull
+    public class KeyedVectorFull<TIndex> : KeyedVectorPartial<TIndex>, IReadOnlyKeyedVectorFull<TIndex> where TIndex : notnull
     {
+        private static Dictionary<TIndex, double> ZeroDictionary { get; set; } = new();
+
+
         public KeyedVectorFull() : base(ZeroDictionary)
         { }
 
         private KeyedVectorFull(Dictionary<TIndex, double> dict) : base(dict)
         { }
+
 
         public static void InitializeKeys(IEnumerable<TIndex> keyList)
         {
@@ -18,13 +22,13 @@ namespace TradeMap.Core
             }
         }
 
-        public override KeyedVectorFull<TIndex> Clone()
+        public KeyedVectorFull<TIndex> CloneFull()
         {
             KeyedVectorFull<TIndex> result = new(Dict);
             return result;
         }
 
-        public void Add(KeyedVectorPartial<TIndex> vec)
+        public void Add(IReadOnlyKeyedVectorPartial<TIndex> vec)
         {
             foreach (var pair in vec)
             {
@@ -32,7 +36,7 @@ namespace TradeMap.Core
             }
         }
 
-        public void Sub(KeyedVectorPartial<TIndex> vec)
+        public void Sub(IReadOnlyKeyedVectorPartial<TIndex> vec)
         {
             foreach (var pair in vec)
             {
@@ -50,7 +54,7 @@ namespace TradeMap.Core
             return result;
         }
 
-        public bool IsSmaller(KeyedVectorPartial<TIndex> bigger)
+        public bool IsSmaller(IReadOnlyKeyedVectorPartial<TIndex> bigger)
         {
             foreach (var pair in bigger)
             {
@@ -62,7 +66,7 @@ namespace TradeMap.Core
             return true;
         }
 
-        public bool IsBigger(KeyedVectorPartial<TIndex> smaller)
+        public bool IsBigger(IReadOnlyKeyedVectorPartial<TIndex> smaller)
         {
             foreach (var pair in smaller)
             {
@@ -73,7 +77,5 @@ namespace TradeMap.Core
             }
             return true;
         }
-
-        private static Dictionary<TIndex, double> ZeroDictionary { get; set; } = new();
     }
 }

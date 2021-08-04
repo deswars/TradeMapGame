@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>TradeMapGame.Localization</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
+  </ItemGroup>
 
 </Project>
