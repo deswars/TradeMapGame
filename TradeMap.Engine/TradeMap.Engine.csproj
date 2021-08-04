@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,14 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
-    <ProjectReference Include="..\TradeMap.Di\TradeMap.Di.csproj" />
-    <ProjectReference Include="..\TradeMap.Engine\TradeMap.Engine.csproj" />
     <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
+    <ProjectReference Include="..\TradeMap.Localization\TradeMap.Localization.csproj" />
   </ItemGroup>
 
 </Project>

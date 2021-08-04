@@ -3,14 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapGameGUI", "MapGameGUI\MapGameGUI.csproj", "{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapGame", "TradeMapGame\TradeMapGame.csproj", "{776FEAAB-A61D-421C-A9A6-F21F4296320E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapGameConfig", "TradeMapGameConfig\TradeMapGameConfig.csproj", "{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapGameLocalization", "TradeMapGameLocalization\TradeMapGameLocalization.csproj", "{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Di", "TradeMap.Di\TradeMap.Di.csproj", "{73EAC1D5-FC0E-4C28-8B1C-5AE6B0BA3FF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.GameLog", "TradeMap.GameLog\TradeMap.GameLog.csproj", "{2E2E16D1-000E-4ECB-860B-0125FD7910D1}"
@@ -23,11 +15,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.GameLog", "Tr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Di", "TradeMapTests.Di\TradeMapTests.Di.csproj", "{D2CC5598-EF86-40AE-8538-314746888D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Configuration", "TradeMap.Configuration\TradeMap.Configuration.csproj", "{B9BF6212-F9AD-4657-85B2-39891D243CB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Configuration", "TradeMap.Configuration\TradeMap.Configuration.csproj", "{B9BF6212-F9AD-4657-85B2-39891D243CB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Core", "TradeMap.Core\TradeMap.Core.csproj", "{CB975D13-7E9D-4B93-8DB4-52C74754C96F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Core", "TradeMap.Core\TradeMap.Core.csproj", "{CB975D13-7E9D-4B93-8DB4-52C74754C96F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMapTests.Core", "TradeMapTests.Core\TradeMapTests.Core.csproj", "{41D5317F-91AB-4431-967B-1F33E62630EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Core", "TradeMapTests.Core\TradeMapTests.Core.csproj", "{41D5317F-91AB-4431-967B-1F33E62630EE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.GUI", "TradeMap.GUI\TradeMap.GUI.csproj", "{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Data", "TradeMap.Data\TradeMap.Data.csproj", "{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Engine", "TradeMap.Engine\TradeMap.Engine.csproj", "{0DA6A9F5-C145-4090-99A2-BEE53295FA39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Interfaces", "TradeMap.Interfaces\TradeMap.Interfaces.csproj", "{8F6649A7-6E79-42F1-878C-B559C2CE47F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,22 +35,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3A7F830-9ED4-46A3-9B73-DD8694BA15CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{776FEAAB-A61D-421C-A9A6-F21F4296320E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{223DE1D1-DCA2-4C94-80F8-9F9D4F6F9C54}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4C857903-A7C0-4403-A4A4-CCA1F9BDDB1C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73EAC1D5-FC0E-4C28-8B1C-5AE6B0BA3FF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73EAC1D5-FC0E-4C28-8B1C-5AE6B0BA3FF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73EAC1D5-FC0E-4C28-8B1C-5AE6B0BA3FF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -87,6 +71,22 @@ Global
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System.Linq;
+using TradeMap.Core;
 using TradeMap.GameLog;
 using Xunit;
 

@@ -67,14 +67,15 @@ namespace TradeMap.Configuration
             File.WriteAllText(file, servicesJson.ToString());
         }
 
-        public static Queue<string> LoadOrderedTurnActions(string file)
+        public static Queue<TurnActionInfo> LoadOrderedTurnActions(string file)
         {
-            Queue<string> result = new();
+            Queue<TurnActionInfo> result = new();
             string actionOrderText = File.ReadAllText(file);
             JArray actionOrderJson = JArray.Parse(actionOrderText);
             foreach (var actionJson in actionOrderJson)
             {
-                result.Enqueue(actionJson.ToString());
+                var actionInfo = GetActionInfo((JObject)actionJson);
+                result.Enqueue(actionInfo);
             }
             return result;
         }
@@ -393,7 +394,7 @@ namespace TradeMap.Configuration
             {
                 if (!demands.ContainsKey(i))
                 {
-                    demands[i] = demands[i - 1].Clone();
+                    demands[i] = demands[i - 1].CloneFull();
                 }
                 i++;
             }
@@ -418,6 +419,14 @@ namespace TradeMap.Configuration
             }
             serviceJson.Add(nameof(service.Actions), actionArrayJson);
             return serviceJson;
+        }
+
+        private static TurnActionInfo GetActionInfo(JObject json)
+        {
+            string eventName = json["Event"]!.ToString();
+            string serviceName = json["Service"]!.ToString();
+            string actionName = json["Action"]!.ToString();
+            return new(eventName, serviceName, actionName);
         }
 
         private static JToken GetConstantJson(Constant constant)

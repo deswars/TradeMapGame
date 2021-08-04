@@ -10,7 +10,7 @@ namespace TradeMap.Configuration
         [Type("Resources")]
         public IReadOnlyDictionary<string, ResourceType> ResourceTypes { get; }
 
-        [Type("Terrains")]
+        [Type("Terrain")]
         public IReadOnlyDictionary<string, TerrainType> TerrainTypes { get; }
 
         [Type("MapFeautres")]

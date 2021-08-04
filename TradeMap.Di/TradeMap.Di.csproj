@@ -6,7 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
     <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Terrain\01_terrain.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -10,10 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TradeMap.Configuration\TradeMap.Configuration.csproj" />
     <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
+    <ProjectReference Include="..\TradeMap.Data\TradeMap.Data.csproj" />
     <ProjectReference Include="..\TradeMap.Di\TradeMap.Di.csproj" />
-    <ProjectReference Include="..\TradeMap.Engine\TradeMap.Engine.csproj" />
     <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
+    <ProjectReference Include="..\TradeMap.Localization\TradeMap.Localization.csproj" />
   </ItemGroup>
 
 </Project>

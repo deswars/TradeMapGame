@@ -1,0 +1,19 @@
+﻿<Window x:Class="TradeMap.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TradeMap.GUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="800" Width="1000" Loaded="Window_Loaded">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Name="mLoadConf" Click="MLoadConf_Click"/>
+            <MenuItem Name="mGenerateMap" Click="MGenerateMap_Click"/>
+            <MenuItem Name="mOutput" Click="MOutput_Click" IsEnabled="False"/>
+        </Menu>
+        <ScrollViewer Name="svMap">
+
+        </ScrollViewer>
+    </DockPanel>
+</Window>

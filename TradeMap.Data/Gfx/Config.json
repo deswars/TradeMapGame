@@ -1,0 +1,7 @@
+{
+  "SpriteSize": 32,
+  "EmptySprite": "Empty32.png",
+  "IconSize": 16,
+  "EmptyIcon": "Empty16.png",
+  "DefaultSettlementSprite": "default.png"
+}

@@ -15,11 +15,19 @@ namespace TradeMap.Localization
         {
             string res = text;
             string separator = _culture.TextInfo.ListSeparator;
-            foreach (var pair in variables)
+            if (variables != null)
             {
-                res += separator + pair.Key + "=" + Convert.ToString(pair.Value, _culture);
+                foreach (var pair in variables)
+                {
+                    res += separator + pair.Key + "=" + Convert.ToString(pair.Value, _culture);
+                }
             }
             return res;
+        }
+
+        public string Expand(string text)
+        {
+            return text;
         }
 
         private readonly CultureInfo _culture;
