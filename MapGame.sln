@@ -13,21 +13,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Localization"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.GameLog", "TradeMapTests.GameLog\TradeMapTests.GameLog.csproj", "{1E0C5107-E497-441F-9988-13C93E667017}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Di", "TradeMapTests.Di\TradeMapTests.Di.csproj", "{D2CC5598-EF86-40AE-8538-314746888D4C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Configuration", "TradeMap.Configuration\TradeMap.Configuration.csproj", "{B9BF6212-F9AD-4657-85B2-39891D243CB9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Core", "TradeMap.Core\TradeMap.Core.csproj", "{CB975D13-7E9D-4B93-8DB4-52C74754C96F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Core", "TradeMapTests.Core\TradeMapTests.Core.csproj", "{41D5317F-91AB-4431-967B-1F33E62630EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.GUI", "TradeMap.GUI\TradeMap.GUI.csproj", "{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Engine", "TradeMap.Engine\TradeMap.Engine.csproj", "{0DA6A9F5-C145-4090-99A2-BEE53295FA39}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.Data", "TradeMap.Data\TradeMap.Data.csproj", "{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMapTests.Engine", "TradeMapTests.Engine\TradeMapTests.Engine.csproj", "{EBABC37B-260A-466D-AEE2-51AF73159588}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Engine", "TradeMap.Engine\TradeMap.Engine.csproj", "{0DA6A9F5-C145-4090-99A2-BEE53295FA39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradeMap.TestConsole", "TradeMap.TestConsole\TradeMap.TestConsole.csproj", "{F3AC2421-62FB-4F87-B6DF-5B14EDDDDD1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Interfaces", "TradeMap.Interfaces\TradeMap.Interfaces.csproj", "{8F6649A7-6E79-42F1-878C-B559C2CE47F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeMap.Gui", "TradeMap.Gui\TradeMap.Gui.csproj", "{5D5ACE72-0D5F-4E20-8F82-933F19B9D51E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,10 +53,6 @@ Global
 		{1E0C5107-E497-441F-9988-13C93E667017}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E0C5107-E497-441F-9988-13C93E667017}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E0C5107-E497-441F-9988-13C93E667017}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2CC5598-EF86-40AE-8538-314746888D4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2CC5598-EF86-40AE-8538-314746888D4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2CC5598-EF86-40AE-8538-314746888D4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2CC5598-EF86-40AE-8538-314746888D4C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B9BF6212-F9AD-4657-85B2-39891D243CB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B9BF6212-F9AD-4657-85B2-39891D243CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9BF6212-F9AD-4657-85B2-39891D243CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -71,22 +65,22 @@ Global
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41D5317F-91AB-4431-967B-1F33E62630EE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1AA3BAEC-DCFC-417E-BB56-CCD88FBC8771}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CED11DE9-4D1D-46FD-92EA-E053E38CCE17}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA6A9F5-C145-4090-99A2-BEE53295FA39}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F6649A7-6E79-42F1-878C-B559C2CE47F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBABC37B-260A-466D-AEE2-51AF73159588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBABC37B-260A-466D-AEE2-51AF73159588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBABC37B-260A-466D-AEE2-51AF73159588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBABC37B-260A-466D-AEE2-51AF73159588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3AC2421-62FB-4F87-B6DF-5B14EDDDDD1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3AC2421-62FB-4F87-B6DF-5B14EDDDDD1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3AC2421-62FB-4F87-B6DF-5B14EDDDDD1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3AC2421-62FB-4F87-B6DF-5B14EDDDDD1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D5ACE72-0D5F-4E20-8F82-933F19B9D51E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D5ACE72-0D5F-4E20-8F82-933F19B9D51E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D5ACE72-0D5F-4E20-8F82-933F19B9D51E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D5ACE72-0D5F-4E20-8F82-933F19B9D51E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

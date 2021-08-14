@@ -1,449 +1,657 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using TradeMap.Configuration.GameLogEntry;
+using TradeMap.Configuration.JsonDto;
 using TradeMap.Core;
-using TradeMap.Core.Map;
+using TradeMap.Core.Map.ReadOnly;
 using TradeMap.Di;
 using TradeMap.Di.Attributes;
+using TradeMap.Engine.Map;
 using TradeMap.GameLog;
 
 namespace TradeMap.Configuration
 {
     public class ConfigurationLoader
     {
-        public const string NameDivisor = "-";
+        private const string _errorTypeJson = "TypeJsonError";
+        private const string _errorFeautreJson = "FeautreJsonError";
+        private const string _errorMissingType = "MissingResourceError";
+        private const string _errorParseConstant = "ParseConstantError";
+        private const string _errorValidateConstant = "ValidateConstantError";
+
+
+        public ITypeRepository TypeRepository { get { return _typeRepository; } }
+
+
+        private readonly IGameLog _log;
+        private readonly List<DirectoryInfo> _rootList = new();
+        private readonly TypeRepository _typeRepository = new();
+        private readonly JsonSerializerSettings _serializationSettings = new();
+        private readonly Dictionary<string, JToken> _constants = new();
+
 
         public ConfigurationLoader(IGameLog log)
         {
             _log = log;
+            _serializationSettings.MissingMemberHandling = MissingMemberHandling.Error;
         }
+
 
         public void AddConfRoot(DirectoryInfo root)
         {
             _rootList.Add(root);
         }
 
-        public TypeRepository LoadTypes()
+        public Dictionary<int, Queue<FeautreInfo>> LoadFeautres(FileInfo file)
         {
-            //resource
-            string resourceDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.ResourceTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var resources = LoadResources(resourceDataName);
-            KeyedVectorFull<ResourceType>.InitializeKeys(resources.Values);
-
-            //terrain
-            string terrainDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.TerrainTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var terrains = LoadTerrains(terrainDataName, resources);
-
-            //feautre
-            string feautreDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.MapFeautreTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var feautres = LoadFeautres(feautreDataName, resources);
-
-            //collector
-            string collectorDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.CollectorTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var collectors = LoadCollectors(collectorDataName, resources, terrains, feautres);
-
-            //building
-            string buildingDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.BuildingTypes))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var buildings = LoadBuildings(buildingDataName, resources);
-
-            //pop demand
-            string demandDataName = typeof(TypeRepository).GetProperty(nameof(TypeRepository.PopulationDemands))!.GetCustomAttribute<TypeAttribute>()!.Name;
-            var demands = LoadPopDemands(demandDataName, resources);
-
-            return new TypeRepository(resources, terrains, feautres, collectors, buildings, demands);
-        }
-
-        public static void WriteAvailableServiceJson(string file, IReadOnlyDictionary<string, Service> serviceList)
-        {
-            JArray servicesJson = new();
-            foreach (var serviceKV in serviceList)
+            Dictionary<int, Queue<FeautreInfo>> result = new();
+            string jsonString = File.ReadAllText(file.FullName);
+            try
             {
-                servicesJson.Add(GetServiceJson(serviceKV.Value));
+                var feautreDtoList = JsonConvert.DeserializeObject<List<FeautreDto>>(jsonString, _serializationSettings);
+
+                if (feautreDtoList == null)
+                {
+                    throw new FormatException();
+                }
+
+                foreach (var feautreDto in feautreDtoList)
+                {
+                    int subStep = feautreDto.Substep;
+                    if (!result.ContainsKey(subStep))
+                    {
+                        result[subStep] = new Queue<FeautreInfo>();
+                    }
+                    result[subStep].Enqueue(feautreDto.ConvertToFeatreInfo());
+                }
             }
-            File.WriteAllText(file, servicesJson.ToString());
-        }
-
-        public static Queue<TurnActionInfo> LoadOrderedTurnActions(string file)
-        {
-            Queue<TurnActionInfo> result = new();
-            string actionOrderText = File.ReadAllText(file);
-            JArray actionOrderJson = JArray.Parse(actionOrderText);
-            foreach (var actionJson in actionOrderJson)
+            catch (Exception e)
             {
-                var actionInfo = GetActionInfo((JObject)actionJson);
-                result.Enqueue(actionInfo);
+                _log.AddEntry(
+                    InfoLevels.Error,
+                    () => new BaseLogEntry(_errorFeautreJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                    );
             }
             return result;
         }
 
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> LoadConstants(IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
+        public ITypeRepository LoadPackages()
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories("Constants")).SelectMany(resDir => resDir.GetFiles());
-            foreach(var file in files)
+            foreach (var packageRoot in _rootList)
             {
-                try
+                var newConst = LoadPackage(packageRoot);
+                if (newConst != null)
                 {
-                    string constantTextText = File.ReadAllText(file.FullName);
-                    JObject constantListJson = JObject.Parse(constantTextText);
-                    foreach (var serviceKV in constants)
+                    foreach (var constKV in newConst)
                     {
-                        if (constantListJson.TryGetValue(serviceKV.Key, out var tokenJson))
-                        {
-                            JObject serviceJson = (JObject)tokenJson;
-                            foreach (var constantKV in serviceKV.Value)
-                            {
-                                if (serviceJson.TryGetValue(constantKV.Key, out var constantJson))
-                                {
-                                    Constant constant = constantKV.Value;
-                                    string newValue = constantJson.ToString();
-                                    if (constant.Constraint.Check(newValue))
-                                    {
-                                        constant.Value = newValue;
-                                    }
-                                    else
-                                    {
-                                        _log.AddEntry(InfoLevels.Warning, () => new LogEntryConstantNewValueConstraint(file.FullName, serviceKV.Key, constantKV.Key, newValue, constant.Constraint));
-                                    }
-                                }
-                            }
-                        }
+                        _constants[constKV.Key] = constKV.Value;
                     }
                 }
-                catch (Exception)
+            }
+            FillAllPopulationDemandsLevels();
+            return TypeRepository;
+        }
+
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> SetupConstants(IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
+        {
+            foreach (var service in constants)
+            {
+                foreach (var constantKV in service.Value)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(file.FullName));
+                    if (_constants.ContainsKey(constantKV.Key))
+                    {
+                        var constant = constantKV.Value;
+                        var error = constant.TrySetValue(_constants[constantKV.Key], _typeRepository);
+                        if (error == TrySetError.ParseError)
+                        {
+                            _log.AddEntry(
+                                InfoLevels.Error,
+                                () => new BaseLogEntry(_errorParseConstant, new Dictionary<string, object>() { { "constat", constantKV.Key }, { "parser", constant.Parser } })
+                                );
+                        }
+                        if (error == TrySetError.ValidationError)
+                        {
+                            _log.AddEntry(
+                                InfoLevels.Error,
+                                () => new BaseLogEntry(_errorValidateConstant, new Dictionary<string, object>() { { "constat", constantKV.Key }, { "validator", constant.Validator! } })
+                                );
+                        }
+                    }
                 }
             }
             return constants;
         }
 
-        private readonly IGameLog _log;
-        private readonly List<DirectoryInfo> _rootList = new();
-
-        private IReadOnlyDictionary<string, ResourceType> LoadResources(string dataName)
+        private Dictionary<string, JToken>? LoadPackage(DirectoryInfo root)
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<string, ResourceType> resources = new();
-            foreach (var file in files)
+            //Resources
+            var resourceAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.ResourceTypes))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var resourcesRoot = root.GetDirectories(resourceAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (resourcesRoot.Length == 1)
+            {
+                LoadPackageResource(resourcesRoot[0]);
+            }
+            KeyedVectorFull<IResourceType>.SetAvailableKeys(TypeRepository.ResourceTypes.Values);
+
+            //Terrain
+            var terrainAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.TerrainTypes))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var terrainRoot = root.GetDirectories(terrainAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (terrainRoot.Length == 1)
+            {
+                LoadPackageTerrain(terrainRoot[0]);
+            }
+
+            //MapFeautres
+            var feautreAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.TerrainFeautreTypes))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var feautreRoot = root.GetDirectories(feautreAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (feautreRoot.Length == 1)
+            {
+                LoadPackageFeautre(feautreRoot[0]);
+            }
+
+            //Collectors
+            var collectorAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.CollectorTypes))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var collectorRoot = root.GetDirectories(collectorAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (collectorRoot.Length == 1)
+            {
+                LoadPackageCollector(collectorRoot[0]);
+            }
+
+            //Buildings
+            var buildingAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.BuildingTypes))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var buildingRoot = root.GetDirectories(buildingAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (buildingRoot.Length == 1)
+            {
+                LoadPackageBuilding(buildingRoot[0]);
+            }
+
+            //Population
+            var demandsAttribute = typeof(TypeRepository).
+                GetProperty(nameof(TypeRepository.PopulationDemands))!.
+                GetCustomAttribute<TypeCategoryAttribute>(false)!;
+            var demandsRoot = root.GetDirectories(demandsAttribute.Name, SearchOption.TopDirectoryOnly);
+            if (demandsRoot.Length == 1)
+            {
+                LoadPackageDemands(demandsRoot[0]);
+            }
+
+            //Constants
+            var constantRoot = root.GetDirectories("Constants", SearchOption.TopDirectoryOnly);
+            if (constantRoot.Length == 1)
+            {
+                return LoadPackageConstants(constantRoot[0]);
+            }
+            return null;
+        }
+
+        private void LoadPackageResource(DirectoryInfo root)
+        {
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(file.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<ResourceDto>>>(json, _serializationSettings);
 
-                    foreach (var resourceJson in json)
+                    if (groupList == null)
                     {
-                        string id = resourceJson.Value<string>("Id")!;
-                        double basePrice = resourceJson.Value<double>("BasePrice");
-                        double decayRate = resourceJson.Value<double>("DecayRate");
-                        var resourceType = new ResourceType(id, basePrice, decayRate);
-                        if (resources.ContainsKey(id))
+                        throw new FormatException();
+                    }
+
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryTypeOverride(id));
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeResource(dataType);
+                            }
                         }
-                        resources[id] = resourceType;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(file.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            return resources;
         }
 
-        private IReadOnlyDictionary<string, TerrainType> LoadTerrains(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
+        private void LoadPackageTerrain(DirectoryInfo root)
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<string, TerrainType> terrains = new();
-            foreach (var file in files)
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(file.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<TerrainDto>>>(json, _serializationSettings);
 
-                    foreach (var terrainJson in json)
+                    if (groupList == null)
                     {
-                        string id = terrainJson.Value<string>("Id")!;
+                        throw new FormatException();
+                    }
 
-                        List<ResourceDeposit> resourceList = new();
-                        var resourceListJson = terrainJson["Resources"]!;
-                        foreach (var resourceJson in resourceListJson)
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            var resource = BuildResourceDeposit(resourceJson, resources);
-                            resourceList.Add(resource);
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeTerrain(dataType);
+                            }
                         }
-
-                        TerrainType terrain = new(id, resourceList);
-                        if (terrains.ContainsKey(id))
-                        {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryTypeOverride(id));
-                        }
-                        terrains[id] = terrain;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(file.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            return terrains;
         }
 
-        private IReadOnlyDictionary<string, TerrainFeautre> LoadFeautres(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
+        private void LoadPackageFeautre(DirectoryInfo root)
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<string, TerrainFeautre> feautres = new();
-            foreach (var resourceDataFile in files)
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(resourceDataFile.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<TerrainFeautreDto>>>(json, _serializationSettings);
 
-                    foreach (var feautreJson in json)
+                    if (groupList == null)
                     {
-                        string id = feautreJson.Value<string>("Id")!;
+                        throw new FormatException();
+                    }
 
-                        List<ResourceDeposit> resourceList = new();
-                        var resourceListJson = feautreJson["Resources"]!;
-                        foreach (var resourceJson in resourceListJson)
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            var resource = BuildResourceDeposit(resourceJson, resources);
-                            resourceList.Add(resource);
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeFeautre(dataType);
+                            }
                         }
-
-                        TerrainFeautre feautre = new(id, resourceList);
-                        if (feautres.ContainsKey(id))
-                        {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryTypeOverride(id));
-                        }
-                        feautres[id] = feautre;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(resourceDataFile.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            return feautres;
         }
 
-        private static ResourceDeposit BuildResourceDeposit(JToken json, IReadOnlyDictionary<string, ResourceType> resources)
+        private void LoadPackageCollector(DirectoryInfo root)
         {
-            string resourceId = json.Value<string>("Resource")!;
-            ResourceType type = resources[resourceId];
-            double richness = json.Value<double>("Richness");
-            return new ResourceDeposit(type, richness);
-        }
-
-        private IReadOnlyDictionary<string, CollectorType> LoadCollectors(
-            string dataName,
-            IReadOnlyDictionary<string, ResourceType> resources,
-            IReadOnlyDictionary<string, TerrainType> terrains,
-            IReadOnlyDictionary<string, TerrainFeautre> feautres)
-        {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<string, CollectorType> collectors = new();
-            foreach (var file in files)
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(file.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<CollectorDto>>>(json, _serializationSettings);
 
-                    foreach (var collectorJson in json)
+                    if (groupList == null)
                     {
-                        string id = collectorJson.Value<string>("Id")!;
+                        throw new FormatException();
+                    }
 
-                        List<TerrainType> requiredTerrain = new();
-                        var terrainListJson = collectorJson["RequiredTerrain"]!;
-                        foreach (var terrainJson in terrainListJson)
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            TerrainType terrain = terrains[terrainJson.ToString()];
-                            requiredTerrain.Add(terrain);
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeCollector(dataType);
+                            }
                         }
-
-                        List<TerrainFeautre> requiredFeautre = new();
-                        var feautreListJson = collectorJson["RequiredFeautre"]!;
-                        foreach (var feautreJson in feautreListJson)
-                        {
-                            TerrainFeautre feautre = feautres[feautreJson.ToString()];
-                            requiredFeautre.Add(feautre);
-                        }
-
-                        List<ResourceType> collectedResources = new();
-                        var collectedListJson = collectorJson["CollectedResources"]!;
-                        foreach (var collectedJson in collectedListJson)
-                        {
-                            ResourceType resource = resources[collectedJson.ToString()];
-                            collectedResources.Add(resource);
-                        }
-                        CollectorType collector = new(id, requiredTerrain, requiredFeautre, collectedResources);
-                        if (collectors.ContainsKey(id))
-                        {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryTypeOverride(id));
-                        }
-                        collectors[id] = collector;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(file.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            return collectors;
         }
 
-        private IReadOnlyDictionary<string, BuildingType> LoadBuildings(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
+        private void LoadPackageBuilding(DirectoryInfo root)
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<string, BuildingType> buildings = new();
-            foreach (var file in files)
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(file.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<BuildingDto>>>(json, _serializationSettings);
 
-                    foreach (var buildingJson in json)
+                    if (groupList == null)
                     {
-                        string id = buildingJson.Value<string>("Id")!;
+                        throw new FormatException();
+                    }
 
-                        List<ResourceType> inputResources = new();
-                        KeyedVectorPartial<ResourceType> input = new KeyedVectorFull<ResourceType>();
-                        var inputListJson = buildingJson["Input"]!;
-                        foreach (var resourceJson in inputListJson)
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            ResourceType resource = resources[resourceJson.Value<string>("Resource")!];
-                            inputResources.Add(resource);
-                            double amount = resourceJson.Value<double>("Amount");
-                            input[resource] = amount;
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeBuilding(dataType);
+                            }
                         }
-                        input = input.FilterSmaller(inputResources);
-
-                        List<ResourceType> outputResources = new();
-                        KeyedVectorPartial<ResourceType> output = new KeyedVectorFull<ResourceType>();
-                        var outputListJson = buildingJson["Output"]!;
-                        foreach (var resourceJson in outputListJson)
-                        {
-                            ResourceType resource = resources[resourceJson.Value<string>("Resource")!];
-                            outputResources.Add(resource);
-                            double amount = resourceJson.Value<double>("Amount");
-                            output[resource] = amount;
-                        }
-                        output = output.FilterSmaller(outputResources);
-
-                        BuildingType building = new(id, input, output);
-                        if (buildings.ContainsKey(id))
-                        {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryTypeOverride(id));
-                        }
-                        buildings[id] = building;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(file.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            return buildings;
         }
 
-        private IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> LoadPopDemands(string dataName, IReadOnlyDictionary<string, ResourceType> resources)
+        private void LoadPackageDemands(DirectoryInfo root)
         {
-            var files = _rootList.SelectMany(dir => dir.GetDirectories(dataName)).SelectMany(resDir => resDir.GetFiles());
-            Dictionary<int, KeyedVectorFull<ResourceType>> demands = new();
-            foreach (var resourceDataFile in files)
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
                 try
                 {
-                    string fileText = File.ReadAllText(resourceDataFile.FullName);
-                    JArray json = JArray.Parse(fileText);
+                    string json = File.ReadAllText(file.FullName);
+                    var groupList = JsonConvert.DeserializeObject<List<GroupDto<DemandsDto>>>(json, _serializationSettings);
 
-                    foreach (var tierJson in json)
+                    if (groupList == null)
                     {
-                        var tier = tierJson.Value<int>("Tier");
-                        var demandsListJson = tierJson["Demands"]!;
-                        KeyedVectorFull<ResourceType> tierDemands = new();
-                        foreach (var demandJson in demandsListJson)
+                        throw new FormatException();
+                    }
+
+                    foreach (var group in groupList)
+                    {
+                        if (CheckGroupRequirements(group))
                         {
-                            ResourceType resource = resources[demandJson.Value<string>("Resource")!];
-                            double amount = demandJson.Value<double>("Amount");
-                            tierDemands[resource] = amount;
+                            foreach (var dataType in group.Include)
+                            {
+                                SaveTypeDemands(dataType);
+                            }
                         }
-                        demands[tier] = tierDemands;
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    _log.AddEntry(InfoLevels.Warning, () => new LogEntryIncorrectFileFormat(resourceDataFile.FullName));
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
                 }
             }
-            if (!demands.ContainsKey(0))
+        }
+
+        private Dictionary<string, JToken> LoadPackageConstants(DirectoryInfo root)
+        {
+            Dictionary<string, JToken> result = new();
+            var jsonFiles = root.GetFiles("*.json", SearchOption.AllDirectories);
+            foreach (var file in jsonFiles)
             {
-                demands[0] = new KeyedVectorFull<ResourceType>();
-            }
-            int i = 1;
-            while (i < demands.Count)
-            {
-                if (!demands.ContainsKey(i))
+                try
                 {
-                    demands[i] = demands[i - 1].CloneFull();
+                    string json = File.ReadAllText(file.FullName);
+                    var constantList = JObject.Parse(json);
+                    foreach (var constJson in constantList)
+                    {
+                        result[constJson.Key] = constJson.Value!;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.AddEntry(
+                        InfoLevels.Error,
+                        () => new BaseLogEntry(_errorTypeJson, new Dictionary<string, object>() { { "file", file }, { "exception", e.Message } })
+                        );
+                }
+            }
+            return result;
+        }
+
+        private bool CheckGroupRequirements<DataType>(GroupDto<DataType> group)
+        {
+            if (group.IfDef != null)
+            {
+                foreach (var id in group.IfDef)
+                {
+                    if (!TypeRepository.Contains(id))
+                    {
+                        return false;
+                    }
+                }
+            }
+            if (group.IfNotDef != null)
+            {
+                foreach (var id in group.IfNotDef)
+                {
+                    if (TypeRepository.Contains(id))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private void SaveTypeResource(ResourceDto dataType)
+        {
+            ResourceType resource = new(dataType.Id, dataType.BasePrice, dataType.Tags);
+            _typeRepository.ResourceTypes[dataType.Id] = resource;
+        }
+
+        private void SaveTypeTerrain(TerrainDto dataType)
+        {
+            List<ResourceDeposit> depositList = new();
+            foreach (var depositDto in dataType.Deposits)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(depositDto.Resource))
+                {
+                    ResourceDeposit deposit = new(_typeRepository.ResourceTypes[depositDto.Resource], depositDto.Richness, depositDto.Hardness);
+                    depositList.Add(deposit);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", depositDto.Resource } }));
+                }
+            }
+            TerrainType terrain = new(dataType.Id, depositList);
+            _typeRepository.TerrainTypes[dataType.Id] = terrain;
+        }
+
+        private void SaveTypeFeautre(TerrainFeautreDto dataType)
+        {
+            List<ITerrainType> terrains = new();
+            foreach (var terrainId in dataType.RequiredTerrain)
+            {
+                if (_typeRepository.TerrainTypes.ContainsKey(terrainId))
+                {
+                    terrains.Add(_typeRepository.TerrainTypes[terrainId]);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", terrainId } }));
+                }
+            }
+
+            List<ResourceDeposit> depositList = new();
+            foreach (var depositDto in dataType.Deposits)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(depositDto.Resource))
+                {
+                    ResourceDeposit deposit = new(_typeRepository.ResourceTypes[depositDto.Resource], depositDto.Richness, depositDto.Hardness);
+                    depositList.Add(deposit);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", depositDto.Resource } }));
+                }
+            }
+            TerrainFeautre terrain = new(dataType.Id, terrains, depositList);
+            _typeRepository.TerrainFeautreTypes[dataType.Id] = terrain;
+        }
+
+        private void SaveTypeCollector(CollectorDto dataType)
+        {
+            List<ITerrainType> terrains = new();
+            foreach (var terrainId in dataType.RequiredTerrain)
+            {
+                if (_typeRepository.TerrainTypes.ContainsKey(terrainId))
+                {
+                    terrains.Add(_typeRepository.TerrainTypes[terrainId]);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", terrainId } }));
+                }
+            }
+
+            List<ITerrainFeautre> feautres = new();
+            foreach (var feautreId in dataType.RequiredFeautre)
+            {
+                if (_typeRepository.TerrainFeautreTypes.ContainsKey(feautreId))
+                {
+                    feautres.Add(_typeRepository.TerrainFeautreTypes[feautreId]);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", feautreId } }));
+                }
+            }
+
+            List<IResourceType> resources = new();
+            foreach (var resourceId in dataType.Collected)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(resourceId))
+                {
+                    resources.Add(_typeRepository.ResourceTypes[resourceId]);
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", resourceId } }));
+                }
+            }
+
+            CollectorType collector = new(dataType.Id, dataType.BasePower, dataType.BaseLevel, terrains, feautres, resources);
+            _typeRepository.CollectorTypes.Add(dataType.Id, collector);
+        }
+
+        private void SaveTypeBuilding(BuildingDto dataType)
+        {
+            Dictionary<IResourceType, double> input = new();
+            foreach (var resourceDelta in dataType.Input)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(resourceDelta.Resource))
+                {
+                    input[_typeRepository.ResourceTypes[resourceDelta.Resource]] = resourceDelta.Amount;
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", resourceDelta.Resource } }));
+                }
+            }
+            var zeroVector = new KeyedVectorFull<IResourceType>();
+            var partialInput = zeroVector.FilterSmaller(input.Keys);
+            foreach (var inputPair in input)
+            {
+                partialInput[inputPair.Key] = inputPair.Value;
+            }
+
+            Dictionary<IResourceType, double> output = new();
+            foreach (var resourceDelta in dataType.Output)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(resourceDelta.Resource))
+                {
+                    output[_typeRepository.ResourceTypes[resourceDelta.Resource]] = resourceDelta.Amount;
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", dataType.Id }, { "missing_id", resourceDelta.Resource } }));
+                }
+            }
+            var partialOutput = zeroVector.FilterSmaller(output.Keys);
+            foreach (var outputPair in output)
+            {
+                partialOutput[outputPair.Key] = outputPair.Value;
+            }
+
+            BuildingType building = new(dataType.Id, dataType.BaseLevel, partialInput, partialOutput);
+            _typeRepository.BuildingTypes.Add(dataType.Id, building);
+        }
+
+        private void SaveTypeDemands(DemandsDto dataType)
+        {
+            Dictionary<IResourceType, double> resources = new();
+            foreach (var resourceDelta in dataType.Demands)
+            {
+                if (_typeRepository.ResourceTypes.ContainsKey(resourceDelta.Resource))
+                {
+                    resources[_typeRepository.ResourceTypes[resourceDelta.Resource]] = resourceDelta.Amount;
+                }
+                else
+                {
+                    _log.AddEntry(InfoLevels.Warning, () => new BaseLogEntry(_errorMissingType, new Dictionary<string, object>() { { "container_id", "population" }, { "missing_id", resourceDelta.Resource } }));
+                }
+            }
+            var zeroVector = new KeyedVectorFull<IResourceType>();
+            var partialResources = zeroVector.FilterSmaller(resources.Keys);
+            foreach (var inputPair in resources)
+            {
+                partialResources[inputPair.Key] = inputPair.Value;
+            }
+
+            _typeRepository.PopulationDemands[dataType.Level] = partialResources;
+        }
+
+        private void FillAllPopulationDemandsLevels()
+        {
+            int i = 0;
+            while (i < _typeRepository.PopulationDemands.Count)
+            {
+                if (!_typeRepository.PopulationDemands.ContainsKey(i))
+                {
+                    if (i != 0)
+                    {
+                        _typeRepository.PopulationDemands[i] = _typeRepository.PopulationDemands[i - 1];
+                    }
+                    else
+                    {
+                        var vector = new KeyedVectorFull<IResourceType>();
+                        _typeRepository.PopulationDemands[0] = vector.FilterSmaller(new List<ResourceType>());
+                    }
                 }
                 i++;
             }
-            return demands;
-        }
-
-        private static JToken GetServiceJson(Service service)
-        {
-            JObject serviceJson = new();
-            serviceJson.Add(nameof(service.Name), service.Name);
-            serviceJson.Add(nameof(service.ServiceType), service.ServiceType.FullName);
-            JArray constantArrayJson = new();
-            foreach (var constant in service.Constants)
-            {
-                constantArrayJson.Add(GetConstantJson(constant.Value));
-            }
-            serviceJson.Add(nameof(service.Constants), constantArrayJson);
-            JArray actionArrayJson = new();
-            foreach (var action in service.Actions)
-            {
-                actionArrayJson.Add(GetActionJson(action.Value));
-            }
-            serviceJson.Add(nameof(service.Actions), actionArrayJson);
-            return serviceJson;
-        }
-
-        private static TurnActionInfo GetActionInfo(JObject json)
-        {
-            string eventName = json["Event"]!.ToString();
-            string serviceName = json["Service"]!.ToString();
-            string actionName = json["Action"]!.ToString();
-            return new(eventName, serviceName, actionName);
-        }
-
-        private static JToken GetConstantJson(Constant constant)
-        {
-            JObject constantJson = new();
-            constantJson.Add(nameof(constant.Name), constant.Name);
-            constantJson.Add(nameof(constant.Value), constant.Value);
-            constantJson.Add(nameof(constant.Constraint), constant.Constraint.ToString());
-            return constantJson;
-        }
-
-        private static JToken GetActionJson(TurnAction action)
-        {
-            JObject actionJson = new();
-            actionJson.Add(nameof(action.Name), action.Name);
-            actionJson.Add(nameof(action.Action), action.Action.Name);
-            return actionJson;
         }
     }
 }

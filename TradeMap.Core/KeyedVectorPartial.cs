@@ -81,5 +81,16 @@ namespace TradeMap.Core
             }
             return result;
         }
+
+        public override string ToString()
+        {
+            var result = "[";
+            foreach (var pair in Dict)
+            {
+                result += "(" + pair.Key + " = " + pair.Value + ")";
+            }
+            result += "]";
+            return result;
+        }
     }
 }

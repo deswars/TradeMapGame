@@ -1,6 +1,4 @@
 ﻿using Moq;
-using System.Linq;
-using TradeMap.Core;
 using TradeMap.GameLog;
 using Xunit;
 
@@ -14,7 +12,7 @@ namespace TradeMapTests.GameLog
             var logEntry1 = new Mock<ILogEntry>().SetupAllProperties();
             var logEntry2 = new Mock<ILogEntry>().SetupAllProperties();
             var logEntry3 = new Mock<ILogEntry>().SetupAllProperties();
-            GameLogImpl log = new();
+            GameLogInMemory log = new();
             InfoLevels level = InfoLevels.Error | InfoLevels.Warning;
             log.SetInfoLevel(level);
             bool isEntryCreated;
@@ -29,13 +27,13 @@ namespace TradeMapTests.GameLog
 
             isEntryCreated = false;
             log.AddEntry(InfoLevels.Warning, () => { isEntryCreated = true; return logEntry2.Object; });
-            Assert.Equal(2, log.Entries.Count());
+            Assert.Equal(2, log.Entries.Count);
             Assert.True(isEntryCreated);
             Assert.Equal(InfoLevels.Warning, logEntry2.Object.InfoLevel);
 
             isEntryCreated = false;
             log.AddEntry(InfoLevels.Info, () => { isEntryCreated = true; return logEntry3.Object; });
-            Assert.Equal(2, log.Entries.Count());
+            Assert.Equal(2, log.Entries.Count);
             Assert.False(isEntryCreated);
         }
 
@@ -45,13 +43,13 @@ namespace TradeMapTests.GameLog
             var logEntry1 = new Mock<ILogEntry>().SetupAllProperties();
             var logEntry2 = new Mock<ILogEntry>().SetupAllProperties();
             var logEntry3 = new Mock<ILogEntry>().SetupAllProperties();
-            GameLogImpl log = new();
+            GameLogInMemory log = new();
             InfoLevels level = InfoLevels.Error;
             log.SetInfoLevel(level);
 
             log.AddEntry(InfoLevels.Error, () => logEntry1.Object);
             log.AddEntry(InfoLevels.Error, () => logEntry2.Object);
-            Assert.Equal(2, log.Entries.Count());
+            Assert.Equal(2, log.Entries.Count);
 
             log.Flush();
             Assert.Empty(log.Entries);

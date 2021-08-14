@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace TradeMap.Core
+﻿namespace TradeMap.Core
 {
     public interface IReadOnlyFlagRepository
     {
         bool HasFlagStr(string name);
         bool TryGetFlagStr(string name, out string value);
         string GetFlagStr(string name);
-        
+
         bool HasFlagInt(string name);
         bool TryGetFlagInt(string name, out int value);
         int GetFlagInt(string name);

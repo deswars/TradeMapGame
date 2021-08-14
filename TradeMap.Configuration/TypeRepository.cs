@@ -1,44 +1,63 @@
 ﻿using System.Collections.Generic;
 using TradeMap.Core;
-using TradeMap.Core.Map;
+using TradeMap.Core.Map.ReadOnly;
 using TradeMap.Di.Attributes;
+using TradeMap.Engine.Map;
 
 namespace TradeMap.Configuration
 {
-    public class TypeRepository
+    class TypeRepository : ITypeRepository
     {
-        [Type("Resources")]
-        public IReadOnlyDictionary<string, ResourceType> ResourceTypes { get; }
+        public const string NullResourceId = "r_null";
+        public const string NullTerrainId = "t_null";
 
-        [Type("Terrain")]
-        public IReadOnlyDictionary<string, TerrainType> TerrainTypes { get; }
 
-        [Type("MapFeautres")]
-        public IReadOnlyDictionary<string, TerrainFeautre> MapFeautreTypes { get; }
+        IReadOnlyDictionary<string, IResourceType> ITypeRepository.ResourceTypes { get => ResourceTypes; }
+        IReadOnlyDictionary<string, ITerrainType> ITypeRepository.TerrainTypes { get => TerrainTypes; }
+        IReadOnlyDictionary<string, ITerrainFeautre> ITypeRepository.TerrainFeautreTypes { get => TerrainFeautreTypes; }
+        IReadOnlyDictionary<string, ICollectorType> ITypeRepository.CollectorTypes { get => CollectorTypes; }
+        IReadOnlyDictionary<string, IBuildingType> ITypeRepository.BuildingTypes { get => BuildingTypes; }
+        IReadOnlyDictionary<int, IReadOnlyKeyedVectorPartial<IResourceType>> ITypeRepository.PopulationDemands { get => PopulationDemands; }
 
-        [Type("Collectors")]
-        public IReadOnlyDictionary<string, CollectorType> CollectorTypes { get; }
 
-        [Type("Buildings")]
-        public IReadOnlyDictionary<string, BuildingType> BuildingTypes { get; }
+        [TypeCategory("Resources")]
+        public Dictionary<string, IResourceType> ResourceTypes { get; }
 
-        [Type("Population")]
-        public IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> PopulationDemands { get; }
+        [TypeCategory("Terrains")]
+        public Dictionary<string, ITerrainType> TerrainTypes { get; }
 
-        public TypeRepository(
-            IReadOnlyDictionary<string, ResourceType> resourceTypes,
-            IReadOnlyDictionary<string, TerrainType> terrainTypes, 
-            IReadOnlyDictionary<string, TerrainFeautre> mapFeautreTypes, 
-            IReadOnlyDictionary<string, CollectorType> collectorTypes, 
-            IReadOnlyDictionary<string, BuildingType> buildingTypes, 
-            IReadOnlyDictionary<int, KeyedVectorFull<ResourceType>> populationDemands)
+        [TypeCategory("MapFeautres")]
+        public Dictionary<string, ITerrainFeautre> TerrainFeautreTypes { get; }
+
+        [TypeCategory("Collectors")]
+        public Dictionary<string, ICollectorType> CollectorTypes { get; }
+
+        [TypeCategory("Buildings")]
+        public Dictionary<string, IBuildingType> BuildingTypes { get; }
+
+        [TypeCategory("Population")]
+        public Dictionary<int, IReadOnlyKeyedVectorPartial<IResourceType>> PopulationDemands { get; }
+
+
+        public TypeRepository()
         {
-            ResourceTypes = resourceTypes;
-            TerrainTypes = terrainTypes;
-            MapFeautreTypes = mapFeautreTypes;
-            CollectorTypes = collectorTypes;
-            BuildingTypes = buildingTypes;
-            PopulationDemands = populationDemands;
+            ResourceTypes = new() { { NullResourceId, new ResourceType(NullResourceId, 0, new HashSet<string>() { "null" }) } };
+            TerrainTypes = new() { { NullTerrainId, new TerrainType(NullTerrainId, new List<IResourceDeposit>()) } };
+            TerrainFeautreTypes = new();
+            CollectorTypes = new();
+            BuildingTypes = new();
+            PopulationDemands = new();
+        }
+
+
+        public bool Contains(string id)
+        {
+            return
+                ResourceTypes.ContainsKey(id) ||
+                TerrainTypes.ContainsKey(id) ||
+                TerrainFeautreTypes.ContainsKey(id) ||
+                CollectorTypes.ContainsKey(id) ||
+                BuildingTypes.ContainsKey(id);
         }
     }
 }

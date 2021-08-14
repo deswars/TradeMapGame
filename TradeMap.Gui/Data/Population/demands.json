@@ -1,0 +1,36 @@
+﻿[
+  {
+    "IfDef": [
+      "r_food"
+    ],
+    "Include": [
+      {
+        "Level": 0,
+        "Demands": [
+          {
+            "Resource": "r_food",
+            "Amount": 2
+          }
+        ]
+      },
+      {
+        "Level": 1,
+        "Demands": [
+          {
+            "Resource": "r_food",
+            "Amount": 4
+          }
+        ]
+      },
+      {
+        "Level": 3,
+        "Demands": [
+          {
+            "Resource": "r_food",
+            "Amount": 8
+          }
+        ]
+      }
+    ]
+  }
+]

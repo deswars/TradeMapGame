@@ -7,6 +7,7 @@ namespace TradeMap.Di.Attributes
     {
         public string Name { get; }
 
+
         public ServiceAttribute(string name)
         {
             Name = name;

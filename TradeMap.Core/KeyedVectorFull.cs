@@ -14,7 +14,7 @@ namespace TradeMap.Core
         { }
 
 
-        public static void InitializeKeys(IEnumerable<TIndex> keyList)
+        public static void SetAvailableKeys(IEnumerable<TIndex> keyList)
         {
             foreach (var key in keyList)
             {

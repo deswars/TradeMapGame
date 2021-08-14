@@ -6,14 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
-    <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Terrain\01_terrain.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
+    <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
   </ItemGroup>
 
 </Project>

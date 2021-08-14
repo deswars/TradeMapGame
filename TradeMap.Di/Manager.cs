@@ -1,35 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using TradeMap.Core;
 using TradeMap.Di.Attributes;
-using TradeMap.Di.GameLogEntry;
 using TradeMap.GameLog;
 
 namespace TradeMap.Di
 {
-    public class Manager<Tdest, TRepository>
+    public class Manager
     {
-        public Manager(IGameLog managerLog, IGameLog gameLog, TRepository gameTypesRepository)
-        {
-            _log = managerLog;
-            _gameLog = gameLog;
-            _repository = gameTypesRepository;
+        private const string _errorReadOnlyProperty = "ReadOnlyPropertyError";
+        private const string _errorParserCreation = "ParserCreationError";
+        private const string _errorValidatorCreation = "ValidatorCreationError";
+        private const string _errorValidatorSupportedType = "ValidatorSupportedTypeError";
+        private const string _errorParserSupportedType = "ParserSupportedTypeError";
+        private const string _errorFeauturelessService = "FeauturelessServiceError";
+        private const string _errorSubstepTooLarge = "SubstepTooLargeError";
+        private const string _errorIncorrectSubturnType = "IncorrectSubturnTypeError";
+        private const string _errorServiceNotFound = "ServiceNotFoundError";
+        private const string _errorFeautreNotFound = "FeautreNotFoundError";
+        private const string _errorIncorrectFeautreRegisterMethod = "IncorrectFeautreRegisterMethodError";
 
-            EventInfo[] events = typeof(Tdest).GetEvents();
-            foreach (var ev in events)
+
+        private readonly IGameLog _log;
+        private readonly ITypeRepository _repository;
+        private readonly ITurnManager _eng;
+
+        private readonly Dictionary<string, Service> _availableServices = new();
+        private readonly Dictionary<string, Service> _registeredServices = new();
+        private readonly Queue<Tuple<Service, Feautre, SubturnTypes, int>> _subscribeOrder = new();
+        private readonly Dictionary<SubturnTypes, MethodInfo> _featureRegister = new();
+
+
+        public Manager(IGameLog log, ITypeRepository gameTypesRepository, ITurnManager eng)
+        {
+            _log = log;
+            _repository = gameTypesRepository;
+            _eng = eng;
+
+            var registerMethods = _eng.GetType().GetMethods().Where(m => m.GetCustomAttribute<SubturnTypeAttribute>() != null);
+            foreach (var method in registerMethods)
             {
-                _possibleEvents[ev.Name] = ev;
+                if (!ValidateRegisterMethod(method))
+                {
+                    _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorIncorrectFeautreRegisterMethod, new Dictionary<string, object> { { "method", method.Name } }));
+                }
+                else
+                {
+                    var attr = method.GetCustomAttribute<SubturnTypeAttribute>()!;
+                    _featureRegister.Add(attr.Name, method);
+                }
             }
         }
 
-        public IReadOnlyDictionary<string, EventInfo> GetPossibleActions()
-        {
-            return _possibleEvents;
-        }
-
-        public IReadOnlyDictionary<string, Service> CollectAllAvailableServices()
+        public IReadOnlyDictionary<string, Service> FindAllAvailableServices()
         {
             ClearLists();
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
@@ -41,10 +66,6 @@ namespace TradeMap.Di
                     var service = GetServiceInfo(type);
                     if (service != null)
                     {
-                        if (_availableServices.ContainsKey(service.Name))
-                        {
-                            _log.AddEntry(InfoLevels.Warning, () => new LogEntryServiceOverride(service.Name, _availableServices[service.Name].ServiceType, service.ServiceType));
-                        }
                         _availableServices[service.Name] = service;
                     }
                 }
@@ -52,32 +73,35 @@ namespace TradeMap.Di
             return _availableServices;
         }
 
-        public bool TryRegisterTurnAction(string eventName, string serviceName, string actionName)
+        public bool TryRegisterTurnAction(SubturnTypes subturnType, string serviceName, string feautreName, int substep)
         {
-            if (!_possibleEvents.ContainsKey(eventName))
+            if (substep >= _eng.SubstepCount)
             {
+                _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorSubstepTooLarge, new Dictionary<string, object> { { "service", serviceName }, { "feautre", feautreName }, { "substep", substep } }));
                 return false;
             }
 
-            EventInfo targetEvent = _possibleEvents[eventName];
             if (!_availableServices.ContainsKey(serviceName))
             {
+                _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorServiceNotFound, new Dictionary<string, object> { { "service", serviceName } }));
                 return false;
             }
+            var targetService = _availableServices[serviceName];
 
-            Service targetService = _availableServices[serviceName];
-            if (!_availableServices[serviceName].Actions.ContainsKey(actionName))
+            if (!targetService.Feautres.ContainsKey(feautreName))
             {
+                _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorFeautreNotFound, new Dictionary<string, object> { { "service", serviceName }, { "feautre", feautreName } }));
                 return false;
             }
+            var targetFeautre = _availableServices[serviceName].Feautres[feautreName];
 
-            TurnAction targetAction = targetService.Actions[actionName];
-            if (!IsActionTypeValid(targetEvent, targetAction))
+            if (!ValidateFeautre(targetFeautre.Method, subturnType))
             {
+                _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorIncorrectSubturnType, new Dictionary<string, object> { { "service", serviceName }, { "feautre", feautreName }, { "type", subturnType } }));
                 return false;
             }
 
-            _subscribeOrder.Enqueue(new Tuple<TurnAction, Service, string>(targetAction, targetService, eventName));
+            _subscribeOrder.Enqueue(new Tuple<Service, Feautre, SubturnTypes, int>(targetService, targetFeautre, subturnType, substep));
             _registeredServices[targetService.Name] = targetService;
             return true;
         }
@@ -92,35 +116,56 @@ namespace TradeMap.Di
             return result;
         }
 
-        public void CreateServicesAndSubscribeActions(Tdest dest, IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
+        public void CreateServicesAndSubscribeActions(IReadOnlyDictionary<string, IReadOnlyDictionary<string, Constant>> constants)
         {
             Dictionary<string, object> createdServices = new();
             foreach (var subscribeElement in _subscribeOrder)
             {
-                TurnAction action = subscribeElement.Item1;
-                Service service = subscribeElement.Item2;
-                string eventName = subscribeElement.Item3;
+                Service service = subscribeElement.Item1;
+                Feautre action = subscribeElement.Item2;
+                SubturnTypes type = subscribeElement.Item3;
+                int substep = subscribeElement.Item4;
 
                 if (!createdServices.ContainsKey(service.Name))
                 {
                     object newService = CreateService(service);
-                    Manager<Tdest, TRepository>.InitializeConstants(newService, constants[service.Name]);
+                    InitializeConstants(newService, constants[service.Name]);
                     createdServices[service.Name] = newService;
                 }
 
-                EventInfo eventInfo = _possibleEvents[eventName];
-                var actionDelegate = Delegate.CreateDelegate(eventInfo.EventHandlerType!, createdServices[service.Name], action.Action);
-                eventInfo.AddEventHandler(dest, actionDelegate);
+                var delegateType = _featureRegister[type].GetParameters()[0].ParameterType;
+                var feautreDelegate = Delegate.CreateDelegate(delegateType, createdServices[service.Name], action.Method);
+                object[] param;
+                if (_featureRegister[type].GetParameters().Length == 1)
+                {
+                    param = new object[] { feautreDelegate };
+                }
+                else
+                {
+                    param = new object[] { feautreDelegate, substep };
+                }
+                _featureRegister[type].Invoke(_eng, param);
             }
         }
 
-        private readonly IGameLog _log;
-        private readonly IGameLog? _gameLog;
-        private readonly Dictionary<string, EventInfo> _possibleEvents = new();
-        private readonly TRepository _repository;
-        private readonly Dictionary<string, Service> _availableServices = new();
-        private readonly Dictionary<string, Service> _registeredServices = new();
-        private readonly Queue<Tuple<TurnAction, Service, string>> _subscribeOrder = new();
+
+        private static bool ValidateRegisterMethod(MethodInfo method)
+        {
+            var methodParam = method.GetParameters();
+            if ((methodParam.Length > 2) || (methodParam.Length < 1))
+            {
+                return false;
+            }
+            if (!methodParam[0].ParameterType.IsSubclassOf(typeof(MulticastDelegate)))
+            {
+                return false;
+            }
+            if ((methodParam.Length == 2) && (methodParam[1].ParameterType != typeof(int)))
+            {
+                return false;
+            }
+            return true;
+        }
 
         private void ClearLists()
         {
@@ -131,82 +176,119 @@ namespace TradeMap.Di
 
         private Service? GetServiceInfo(Type serviceType)
         {
-            if (serviceType.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) }) == null)
+            if (serviceType.GetConstructor(new Type[] { typeof(IGameLog) }) == null)
             {
                 return null;
             }
+
             string serviceName = serviceType.GetCustomAttribute<ServiceAttribute>()!.Name;
+
             var constantList = GetConstantList(serviceType, serviceName);
             if (constantList == null)
             {
                 return null;
             }
-            var actionList = Manager<Tdest, TRepository>.GetTurnActionList(serviceType);
-            if ((actionList == null) || !actionList.Any())
+
+            var feautreList = GetFeautreList(serviceType, serviceName);
+            if (feautreList == null)
             {
-                _log.AddEntry(InfoLevels.Warning, () => new LogEntryActionlessService(serviceName, serviceType));
                 return null;
             }
-            return new Service(serviceName, serviceType, constantList, actionList);
+
+            return new Service(serviceName, serviceType, constantList, feautreList);
         }
 
         private Dictionary<string, Constant>? GetConstantList(Type serviceType, string serviceName)
         {
             Dictionary<string, Constant> result = new();
             var propertyList = serviceType.GetProperties().Where(property => property.GetCustomAttribute<ConstantAttribute>() != null);
+
             foreach (var property in propertyList)
             {
                 ConstantAttribute attribute = property.GetCustomAttribute<ConstantAttribute>()!;
                 string name = attribute.Name;
                 if (!property.CanWrite)
                 {
-                    _log.AddEntry(InfoLevels.Error, () => new LogEntryReadOnlyProperty(serviceType.Name, serviceName, name));
+                    _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorReadOnlyProperty, new Dictionary<string, object> { { "service", serviceName }, { "constant", name } }));
                     return null;
                 }
-                if (!attribute.Constraint.Check(attribute.DefaultValue))
+
+                var parserAttr = attribute.Parser.GetCustomAttribute<SupportedTypeAttribute>();
+                if ((parserAttr == null) || (parserAttr.SupportedType != property.PropertyType))
                 {
-                    _log.AddEntry(InfoLevels.Error, () => new LogEntryDefaultValueConstraintError(serviceType.Name, serviceName, name, attribute.DefaultValue, attribute.Constraint));
+                    _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorParserSupportedType, new Dictionary<string, object> { { "service", serviceName }, { "constant", name } }));
                     return null;
                 }
-                result[name] = new Constant(name, attribute.DefaultValue, attribute.Constraint);
+                IParserJson? parser = ParserBuilder.Build(attribute.Parser, attribute.ParserArgs);
+                if (parser == null)
+                {
+                    _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorParserCreation, new Dictionary<string, object> { { "service", serviceName }, { "constant", name } }));
+                    return null;
+                }
+
+                IValidator? validator = null;
+                if (attribute.Validator != null)
+                {
+                    var validatorAttr = attribute.Validator.GetCustomAttribute<SupportedTypeAttribute>();
+                    if ((validatorAttr == null) || (validatorAttr.SupportedType != property.PropertyType))
+                    {
+                        _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorValidatorSupportedType, new Dictionary<string, object> { { "service", serviceName }, { "constant", name } }));
+                        return null;
+                    }
+                    validator = ValidatorBuilder.Build(attribute.Validator, attribute.ValidatorArgs!, _repository);
+                    if (validator == null)
+                    {
+                        _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorValidatorCreation, new Dictionary<string, object> { { "service", serviceName }, { "constant", name } }));
+                        return null;
+                    }
+                }
+
+                result[name] = new Constant(serviceName, name, parser, validator);
             }
+
             return result;
         }
 
-        private static Dictionary<string, TurnAction>? GetTurnActionList(Type serviceType)
+        private Dictionary<string, Feautre>? GetFeautreList(Type serviceType, string serviceName)
         {
-            Dictionary<string, TurnAction> result = new();
-            var methodList = serviceType.GetMethods().Where(property => property.GetCustomAttribute<TurnActionAttribute>() != null);
+            Dictionary<string, Feautre> result = new();
+            var methodList = serviceType.GetMethods().Where(property => property.GetCustomAttribute<FeautreAttribute>() != null);
             foreach (var method in methodList)
             {
-                TurnActionAttribute attribute = method.GetCustomAttribute<TurnActionAttribute>()!;
-                result[attribute.Name] = new TurnAction(attribute.Name, method);
+                var attribute = method.GetCustomAttribute<FeautreAttribute>()!;
+                result[attribute.Name] = new Feautre(attribute.Name, method);
             }
+
+            if (!result.Any())
+            {
+                _log.AddEntry(InfoLevels.Error, () => new BaseLogEntry(_errorFeauturelessService, new Dictionary<string, object> { { "service", serviceName } }));
+                return null;
+            }
+
             return result;
         }
 
-        private static bool IsActionTypeValid(EventInfo targetEvent, TurnAction targetAction)
+        private bool ValidateFeautre(MethodInfo feautre, SubturnTypes type)
         {
-            var handlerType = targetEvent.EventHandlerType;
-            if (handlerType == null)
+            if (!_featureRegister.ContainsKey(type))
             {
                 return false;
             }
-            var delegateMethod = handlerType.GetMethod("Invoke")!;
-            var actionMethod = targetAction.Action;
-            if (delegateMethod.ReturnType != actionMethod.ReturnType)
+            var delegateType = _featureRegister[type].GetParameters()[0].ParameterType;
+            var delegateMethod = delegateType.GetMethod("Invoke")!;
+            if (delegateMethod.ReturnType != feautre.ReturnType)
             {
                 return false;
             }
-            var delegateArgs = delegateMethod.GetParameters();
-            var actionArgs = actionMethod.GetParameters();
-            if (delegateArgs.Length != actionArgs.Length)
+            var delegateParam = delegateMethod.GetParameters();
+            var feautreParam = feautre.GetParameters();
+            if (delegateParam.Length != feautreParam.Length)
             {
                 return false;
             }
-            for (int i = 0; i < delegateArgs.Length; i++)
+            for (int i = 0; i < delegateParam.Length; i++)
             {
-                if (delegateArgs[i].ParameterType != actionArgs[i].ParameterType)
+                if (delegateParam[i].ParameterType != feautreParam[i].ParameterType)
                 {
                     return false;
                 }
@@ -217,7 +299,7 @@ namespace TradeMap.Di
         private object CreateService(Service service)
         {
             Type type = service.ServiceType;
-            return type.GetConstructor(new Type[] { typeof(IGameLog), typeof(TRepository) })!.Invoke(new object?[] { _gameLog, _repository });
+            return type.GetConstructor(new Type[] { typeof(IGameLog) })!.Invoke(new object[] { _log });
         }
 
         private static void InitializeConstants(object service, IReadOnlyDictionary<string, Constant> constantList)
@@ -226,8 +308,7 @@ namespace TradeMap.Di
             foreach (var property in type.GetProperties().Where(prop => prop.GetCustomAttribute<ConstantAttribute>() != null))
             {
                 ConstantAttribute attribute = property.GetCustomAttribute<ConstantAttribute>()!;
-                var value = Convert.ChangeType(constantList[attribute.Name].Value, property.PropertyType, CultureInfo.InvariantCulture);
-                property.SetValue(service, value);
+                property.SetValue(service, constantList[attribute.Name].Value);
             }
         }
     }

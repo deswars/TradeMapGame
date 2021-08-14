@@ -1,0 +1,37 @@
+[
+  {
+    "IfDef": [
+      "t_plains",
+      "t_hills"
+    ],
+    "IfNotDef": [
+      "f_wood"
+    ],
+    "Include": [
+      {
+        "Id": "f_wood",
+        "RequiredTerrain": [
+          "t_plains",
+          "t_hills"
+        ],
+        "Deposits": [
+          {
+            "Resource": "r_food",
+            "Richness": 2,
+            "Hardness": 0
+          },
+          {
+            "Resource": "r_food",
+            "Richness": 2,
+            "Hardness": 3
+          },
+          {
+            "Resource": "r_food",
+            "Richness": -2,
+            "Hardness": 1
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,148 +1,203 @@
-﻿using Microsoft.Win32;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Reflection;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using TradeMap.Configuration;
 using TradeMap.Core;
-using TradeMap.Core.Map;
-using TradeMap.Di;
+using TradeMap.Core.Map.ReadOnly;
 using TradeMap.GameLog;
 using TradeMap.Localization;
 
-namespace TradeMap.GUI
+namespace TradeMap.Gui
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-#pragma warning disable CS8618
+        private const string _windowTitle = "[MainWindow_Title]";
+        private const string _btnNextTurn = "[MainWindow_NextTurn]";
+        private const string _lbTurn = "[MainWindow_Turn]";
+
+
+        private const string _configFile = "config.json";
+        private Config? _conf;
+        private SimulationMapBuilder? _builder;
+        private ITextLocalizer _localizer;
+        private MapEngine _eng;
+        private IMap _map;
+        private int _baseCellSize = 32;
+        private GfxConfig? _confGfx;
+        private GfxRepository _repo;
+
         public MainWindow()
         {
+
+            Cursor = Cursors.Wait;
+            string appName = Assembly.GetExecutingAssembly().GetName().Name!;
+            try
+            {
+                string configStr = File.ReadAllText(_configFile);
+                _conf = JsonSerializer.Deserialize<Config>(configStr);
+                string configGfxStr = File.ReadAllText("Gfx/gfx.json");
+                _confGfx = JsonSerializer.Deserialize<GfxConfig>(configGfxStr);
+            }
+            catch
+            { }
+
+            if ((_conf == null) || (_confGfx == null))
+            {
+                MessageBox.Show("Incorrect config file");
+                Close();
+            }
+
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            _localizer = new TextLocalizer(new string[1] { _conf!.Localization });
+
+            GameLogFile _log = new(appName, _conf.Log, InfoLevels.Warning);
+            _builder = new(_log);
+            _builder.SetSubstepCount(_conf.SubstepCount);
+            NewMapWindow newMap = new NewMapWindow(_localizer);
+
+            _repo = new();
+            LoadGfx();
+
             InitializeComponent();
+
+            newMap.ShowDialog();
+            if (!newMap.Success)
+            {
+                Close();
+            }
+            _builder.SetMapSize(newMap.MapWidth, newMap.MapHeight);
+            foreach(var package in _conf.Packages)
+            {
+                _builder.AddPackage(new DirectoryInfo(package));
+            }
+            _builder.Initialize();
+            _eng = _builder.BuildEngine(new FileInfo(_conf.Feautres));
+            _map = _eng.Map;
+            _conf = null;
+            _builder = null;
+            _confGfx = null;
         }
-#pragma warning restore CS8618
-
-        private GuiConfig _guiConfig;
-        private Manager<Engine, TypeRepository> _diManager;
-        private ConfigurationLoader _conf;
-        private ITextLocalizer _localizer;
-        private IReadOnlyDictionary<string, Service> _availableServices;
-        private TypeRepository _types;
-        private SquareDiagonalMap _map;
-        private Engine _eng;
-
-        private readonly IGameLog _systemLog = new GameLogImpl();
-        private readonly IGameLog _gameLog = new GameLogImpl();
-        private readonly SpriteRepository _sprites = new();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            string configText = File.ReadAllText("Gfx/Config.json");
-            _guiConfig = JsonConvert.DeserializeObject<GuiConfig>(configText)!;
-            _sprites.EmptySprite.Source = new BitmapImage(new Uri(AppDomain.CurrentDomain.BaseDirectory + "Gfx\\" + _guiConfig.EmptySprite, UriKind.Absolute));
-            _sprites.EmptyIcon.Source = new BitmapImage(new Uri(AppDomain.CurrentDomain.BaseDirectory + "Gfx\\" + _guiConfig.EmptyIcon, UriKind.Absolute));
-            _sprites.EmptyIcon.Source = new BitmapImage(new Uri(AppDomain.CurrentDomain.BaseDirectory + "Gfx\\Settlement\\" + _guiConfig.DefaultSettlementSprite, UriKind.Absolute));
+            Title = _localizer.Expand(_windowTitle);
+            BtnTurn.Content = _localizer.Expand(_btnNextTurn);
+            LbTurn.Content = _localizer.Expand(_lbTurn);
+            LbCurrentTurn.Content = 0;
 
-            _localizer = new BasicTextLocalizer(CultureInfo.InvariantCulture);
-            _systemLog.SetInfoLevel(InfoLevels.Error | InfoLevels.Warning);
-            _gameLog.SetInfoLevel(InfoLevels.All);
-
-            _conf = new ConfigurationLoader(_systemLog);
-            _conf.AddConfRoot(new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "Data\\"));
-
-            UpdateLocalization();
+            cnsMap.Children.Clear();
+            cnsMap.Height = _map.Height * _baseCellSize;
+            cnsMap.Width = _map.Width * _baseCellSize;
+            DrawMap();
+            Cursor = Cursors.Arrow;
         }
 
-        private void UpdateLocalization()
-        {
-            mLoadConf.Header = _localizer.Expand("[MenuLoadConfig]");
-            mOutput.Header = _localizer.Expand("[MenuOutput]");
-            mGenerateMap.Header = _localizer.Expand("[MenuGenerateMap]");
-        }
-
-        private void MLoadConf_Click(object sender, RoutedEventArgs e)
-        {
-            _types = _conf.LoadTypes();
-            LoadGfx(_types);
-            _diManager = new Manager<Engine, TypeRepository>(_systemLog, _gameLog, _types);
-
-            _availableServices = _diManager.CollectAllAvailableServices();
-            var steps = ConfigurationLoader.LoadOrderedTurnActions(AppDomain.CurrentDomain.BaseDirectory + "Data\\EngineSteps.json");
-            foreach (var step in steps)
-            {
-                _diManager.TryRegisterTurnAction(step.EventName, step.ServiceName, step.ActionName);
-            }
-
-            mOutput.IsEnabled = true;
-            mLoadConf.IsEnabled = false;
-            mGenerateMap.IsEnabled = true;
-        }
-
-        private void MOutput_Click(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog saveDlg = new();
-            saveDlg.Filter = _localizer.Expand("[SaveServiceInfo]|*.json");
-            if (saveDlg.ShowDialog() == true)
-            {
-                ConfigurationLoader.WriteAvailableServiceJson(saveDlg.FileName, _availableServices);
-            }
-        }
-
-        private void MGenerateMap_Click(object sender, RoutedEventArgs e)
-        {
-            _map = BasicMapGenerator.Generate(100, 100, _types);
-            _eng = new Engine(_map, _gameLog);
-            var constants = _diManager.CollectConstantDemands();
-            constants = _conf.LoadConstants(constants);
-            _diManager.CreateServicesAndSubscribeActions(_eng, constants);
-
-            FullDrawMap();
-        }
-
-        private void LoadGfx(TypeRepository types)
-        {
-            _sprites.Terrain = LoadTypeGfx(types.TerrainTypes.Keys, AppDomain.CurrentDomain.BaseDirectory + "Gfx\\Terrain\\", _sprites.EmptySprite);
-            _sprites.MapFeautre = LoadTypeGfx(types.TerrainTypes.Keys, AppDomain.CurrentDomain.BaseDirectory + "Gfx\\MapFeautres\\", _sprites.EmptySprite);
-            _sprites.Collector = LoadTypeGfx(types.TerrainTypes.Keys, AppDomain.CurrentDomain.BaseDirectory + "Gfx\\Collectors\\", _sprites.EmptySprite);
-            _sprites.Building = LoadTypeGfx(types.TerrainTypes.Keys, AppDomain.CurrentDomain.BaseDirectory + "Gfx\\Buildings\\", _sprites.EmptySprite);
-        }
-
-        private static IReadOnlyDictionary<string, Image> LoadTypeGfx(IEnumerable<string> idList, string root, Image emptySprite)
-        {
-            Dictionary<string, Image> result = new();
-            foreach (var id in idList)
-            {
-                FileInfo file = new FileInfo(root + id + ".png");
-                Image img;
-                if (file.Exists)
-                {
-                    img = new();
-                    img.Source = new BitmapImage(new Uri(file.FullName, UriKind.Absolute));
-                }
-                else
-                {
-                    img = emptySprite;
-                }
-                result.Add(id, img);
-            }
-            return result;
-        }
-
-        private void FullDrawMap()
+        private void DrawMap()
         {
             for (int i = 0; i < _map.Width; i++)
             {
                 for (int k = 0; k < _map.Height; k++)
                 {
-                    //TODO GUI
+                    CreateCell(_map[i, k]);
                 }
+            }
+        }
+
+        private void CreateCell(ICell cell)
+        {
+            Image imgCell = new Image();
+            if (_repo.Terrains.TryGetValue(cell.Terrain.Id, out Image? img))
+            {
+                imgCell.Source = img.Source;
+            }
+            else
+            {
+                imgCell.Source = _repo.Empty32.Source;
+            }
+            imgCell.Height = _baseCellSize;
+            imgCell.Width = _baseCellSize;
+            cnsMap.Children.Add(imgCell);
+            Canvas.SetLeft(imgCell, cell.Position.X * _baseCellSize);
+            Canvas.SetTop(imgCell, cell.Position.Y * _baseCellSize);
+        }
+
+        private void BtnTurn_Click(object sender, RoutedEventArgs e)
+        {
+            _eng.NextTurn();
+        }
+
+        private void LoadGfx()
+        {
+            var config = _confGfx!;
+
+            try
+            {
+                Image img = new();
+                BitmapImage source = new BitmapImage();
+                source.BeginInit();
+                source.CacheOption = BitmapCacheOption.OnLoad;
+                source.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                source.UriSource = new Uri(config.Empty16, UriKind.Relative);
+                source.EndInit();
+                img.Source = source;
+                _repo.Empty16 = img;
+            }
+            catch { }
+
+            try
+            {
+                Image img = new();
+                BitmapImage source = new BitmapImage();
+                source.BeginInit();
+                source.CacheOption = BitmapCacheOption.OnLoad;
+                source.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                source.UriSource = new Uri(config.Empty32, UriKind.Relative);
+                source.EndInit();
+                img.Source = source;
+                _repo.Empty32 = img;
+            }
+            catch { }
+
+            foreach(var resource in config.Resources)
+            {
+                try
+                {
+                    Image img = new();
+                    BitmapImage source = new BitmapImage();
+                    source.BeginInit();
+                    source.CacheOption = BitmapCacheOption.OnLoad;
+                    source.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    source.UriSource = new Uri(resource.Value, UriKind.Relative);
+                    source.EndInit();
+                    img.Source = source;
+                    _repo.Resources[resource.Key] = img;
+                }
+                catch { }
+            }
+
+            foreach (var terrain in config.Terrains)
+            {
+                try
+                {
+                    Image img = new();
+                    BitmapImage source = new BitmapImage();
+                    source.BeginInit();
+                    source.CacheOption = BitmapCacheOption.OnLoad;
+                    source.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    source.UriSource = new Uri(terrain.Value, UriKind.Relative);
+                    source.EndInit();
+                    img.Source = source;
+                    _repo.Terrains[terrain.Key] = img;
+                }
+                catch { }
             }
         }
     }

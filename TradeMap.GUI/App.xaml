@@ -1,7 +1,6 @@
-﻿<Application x:Class="TradeMap.GUI.App"
+﻿<Application x:Class="TradeMap.Gui.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TradeMap.GUI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

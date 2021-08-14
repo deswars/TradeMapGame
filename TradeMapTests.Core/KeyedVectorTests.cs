@@ -1,8 +1,7 @@
-﻿using Xunit;
-using TradeMap.Core;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using TradeMap.Core;
+using Xunit;
 
 namespace TradeMapTests.Core
 {
@@ -12,7 +11,7 @@ namespace TradeMapTests.Core
         public void KeyedVectorTest()
         {
             List<string> keys = new() { "a", "b", "c" };
-            KeyedVectorFull<string>.InitializeKeys(keys);
+            KeyedVectorFull<string>.SetAvailableKeys(keys);
             KeyedVectorFull<string> vec = new();
 
             Assert.Equal(0, vec["a"]);
@@ -151,7 +150,7 @@ namespace TradeMapTests.Core
         public static IEnumerable<object[]> SingleVector()
         {
             List<string> keys = new() { "a", "b", "c" };
-            KeyedVectorFull<string>.InitializeKeys(keys);
+            KeyedVectorFull<string>.SetAvailableKeys(keys);
             return new List<object[]>
             {
                 new object[] { keys, new KeyedVectorFull<string>() { ["a"] = 1, ["b"] = 2, ["c"] = 3 } },
@@ -164,7 +163,7 @@ namespace TradeMapTests.Core
         {
             List<string> keys = new() { "a", "b", "c" };
             List<string> keysSmall = new() { "a", "c" };
-            KeyedVectorFull<string>.InitializeKeys(keys);
+            KeyedVectorFull<string>.SetAvailableKeys(keys);
             return new List<object[]>
             {
                 new object[] { keys, new KeyedVectorFull<string>() { ["a"] = 1, ["b"] = 2, ["c"] = 3 }, new KeyedVectorFull<string>() { ["a"] = 4, ["b"] = 5, ["c"] = 6 } },
@@ -177,7 +176,7 @@ namespace TradeMapTests.Core
         public static IEnumerable<object[]> FilterVector()
         {
             List<string> keys = new() { "a", "b", "c" };
-            KeyedVectorFull<string>.InitializeKeys(keys);
+            KeyedVectorFull<string>.SetAvailableKeys(keys);
             return new List<object[]>
             {
                 new object[] { keys, new KeyedVectorFull<string>() { ["a"] = 1, ["b"] = 2, ["c"] = 3 }, new List<string>() { "a" } },
@@ -190,7 +189,7 @@ namespace TradeMapTests.Core
         public static IEnumerable<object[]> CompareVector()
         {
             List<string> keys = new() { "a", "b", "c" };
-            KeyedVectorFull<string>.InitializeKeys(keys);
+            KeyedVectorFull<string>.SetAvailableKeys(keys);
             return new List<object[]>
             {
                 new object[] { new KeyedVectorFull<string>() { ["a"] = 1, ["b"] = 2, ["c"] = 3 }, new KeyedVectorFull<string>() { ["a"] = 4, ["b"] = 5, ["c"] = 6 } },

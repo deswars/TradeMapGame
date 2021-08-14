@@ -1,0 +1,44 @@
+[
+  {
+    "IfDef": [
+      "r_food",
+      "r_money"
+    ],
+    "IfNotDef": [
+      "t_plains",
+      "t_hills"
+    ],
+    "Include": [
+      {
+        "Id": "t_plains",
+        "Deposits": [
+          {
+            "Resource": "r_food",
+            "Richness": 2,
+            "Hardness": 0
+          },
+          {
+            "Resource": "r_food",
+            "Richness": 3,
+            "Hardness": 1
+          }
+        ]
+      },
+      {
+        "Id": "t_hills",
+        "Deposits": [
+          {
+            "Resource": "r_food",
+            "Richness": 2,
+            "Hardness": 0
+          },
+          {
+            "Resource": "r_food",
+            "Richness": 2,
+            "Hardness": 2
+          }
+        ]
+      }
+    ]
+  }
+]

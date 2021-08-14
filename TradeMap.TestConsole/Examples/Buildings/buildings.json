@@ -1,0 +1,41 @@
+﻿[
+  {
+    "IfDef": [
+      "r_food",
+      "r_money"
+    ],
+    "IfNotDef": [
+      "b_taxcollector",
+      "b_foodprocessor"
+    ],
+    "Include": [
+      {
+        "Id": "b_taxcollector",
+        "BaseLevel": 0,
+        "Input": [],
+        "Output": [
+          {
+            "Resource": "r_money",
+            "Amount": 10
+          }
+        ]
+      },
+      {
+        "Id": "b_foodprocessor",
+        "BaseLevel": 1,
+        "Input": [
+          {
+            "Resource": "r_food",
+            "Amount": 11
+          }
+        ],
+        "Output": [
+          {
+            "Resource": "r_food",
+            "Amount": 11
+          }
+        ]
+      }
+    ]
+  }
+]

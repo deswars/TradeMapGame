@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TradeMap.Core\TradeMap.Core.csproj" />
+    <ProjectReference Include="..\TradeMap.Di\TradeMap.Di.csproj" />
     <ProjectReference Include="..\TradeMap.GameLog\TradeMap.GameLog.csproj" />
-    <ProjectReference Include="..\TradeMap.Localization\TradeMap.Localization.csproj" />
   </ItemGroup>
 
 </Project>

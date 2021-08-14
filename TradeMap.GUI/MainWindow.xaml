@@ -1,19 +1,23 @@
-﻿<Window x:Class="TradeMap.GUI.MainWindow"
+﻿<Window x:Class="TradeMap.Gui.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TradeMap.GUI"
+        xmlns:local="clr-namespace:TradeMap.Gui"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1000" Loaded="Window_Loaded">
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Name="mLoadConf" Click="MLoadConf_Click"/>
-            <MenuItem Name="mGenerateMap" Click="MGenerateMap_Click"/>
-            <MenuItem Name="mOutput" Click="MOutput_Click" IsEnabled="False"/>
-        </Menu>
-        <ScrollViewer Name="svMap">
-
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+    <Grid Name="GridGrd">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button Name="BtnTurn" VerticalAlignment="Center" Click="BtnTurn_Click">Turn</Button>
+            <Label Name="LbTurn" VerticalAlignment="Center">Turn number:</Label>
+            <Label Name="LbCurrentTurn" VerticalAlignment="Center">1</Label>
+        </StackPanel>
+        <ScrollViewer Name="svMap" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Canvas Name="cnsMap"/>
         </ScrollViewer>
-    </DockPanel>
+    </Grid>
 </Window>

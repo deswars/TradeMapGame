@@ -1,0 +1,31 @@
+﻿[
+  {
+    "IfDef": [
+      "t_plains",
+      "t_hills",
+      "r_food"
+    ],
+    "IfNotDef": [
+      "rc_gathering",
+      "rc_farming"
+    ],
+    "Include": [
+      {
+        "Id": "rc_gathering",
+        "BasePower": 0,
+        "BaseLevel": 0,
+        "RequiredTerrain": [ "t_plains", "t_hills" ],
+        "RequiredFeautre": [],
+        "Collected": [ "r_food" ]
+      },
+      {
+        "Id": "rc_farming",
+        "BasePower": 1,
+        "BaseLevel": 1,
+        "RequiredTerrain": [ "t_plains", "t_hills" ],
+        "RequiredFeautre": [],
+        "Collected": [ "r_food" ]
+      }
+    ]
+  }
+]

@@ -1,5 +1,4 @@
 ﻿using System;
-using TradeMap.Di.Constraints;
 
 namespace TradeMap.Di.Attributes
 {
@@ -7,21 +6,26 @@ namespace TradeMap.Di.Attributes
     public class ConstantAttribute : Attribute
     {
         public string Name { get; }
-        public string DefaultValue { get; }
-        public IConstraint Constraint { get; }
+        public Type Parser { get; }
+        public string[] ParserArgs { get; }
+        public Type? Validator { get; }
+        public string[]? ValidatorArgs { get; }
 
-        public ConstantAttribute(string defaultValue, string name)
+
+        public ConstantAttribute(string name, Type parser, string[] parserArgs, Type validator, string[] validatorArgs)
         {
             Name = name;
-            DefaultValue = defaultValue;
-            Constraint = new ConstraintAll();
+            Parser = parser;
+            ParserArgs = parserArgs;
+            Validator = validator;
+            ValidatorArgs = validatorArgs;
         }
 
-        public ConstantAttribute(string defaultValue, string name, Type constraint, string constraintParam)
+        public ConstantAttribute(string name, Type parser, string[] parserArgs)
         {
             Name = name;
-            DefaultValue = defaultValue;
-            Constraint = ConstraintFactory.CreateConstraint(constraint, constraintParam);
+            Parser = parser;
+            ParserArgs = parserArgs;
         }
     }
 }

@@ -7,9 +7,21 @@ namespace TradeMap.GameLog
     {
         public InfoLevels InfoLevel { get; set; }
 
+
+        private readonly string _name;
+        private readonly Dictionary<string, object>? _variables;
+
+
+        public BaseLogEntry(string name, Dictionary<string, object>? variables)
+        {
+            _name = name;
+            _variables = variables;
+        }
+
+
         public virtual string ToText(ITextLocalizer localizer)
         {
-            return localizer.Expand("[LogEntry]", new Dictionary<string, object>());
+            return localizer.Expand($"[{_name}]", _variables);
         }
     }
 }

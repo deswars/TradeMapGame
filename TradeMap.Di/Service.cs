@@ -8,14 +8,14 @@ namespace TradeMap.Di
         public string Name { get; }
         public Type ServiceType { get; }
         public IReadOnlyDictionary<string, Constant> Constants { get; }
-        public IReadOnlyDictionary<string, TurnAction> Actions { get; }
+        public IReadOnlyDictionary<string, Feautre> Feautres { get; }
 
-        public Service(string name, Type serviceType, IReadOnlyDictionary<string, Constant> constants, IReadOnlyDictionary<string, TurnAction> actions)
+        public Service(string name, Type serviceType, IReadOnlyDictionary<string, Constant> constants, IReadOnlyDictionary<string, Feautre> feautres)
         {
             Name = name;
             ServiceType = serviceType;
             Constants = constants;
-            Actions = actions;
+            Feautres = feautres;
         }
     }
 }

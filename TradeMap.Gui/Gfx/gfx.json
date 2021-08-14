@@ -1,0 +1,10 @@
+{
+  "Empty16": "Gfx/empty16.png",
+  "Empty32": "Gfx/empty32.png",
+  "Resources": {
+    "r_null": "Gfx/Resources/r_null.png"
+  },
+  "Terrains": {
+    "t_null": "Gfx/Terrains/t_null.png"
+  }
+}

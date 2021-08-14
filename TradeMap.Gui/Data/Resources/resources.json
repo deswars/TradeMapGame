@@ -1,0 +1,19 @@
+[
+  {
+    "IfNotDef": [
+      "r_food"
+    ],
+    "Include": [
+      {
+        "Id": "r_money",
+        "Tags": [ "money", "base" ],
+        "BasePrice": 1
+      },
+      {
+        "Id": "r_food",
+        "Tags": [ "food", "base" ],
+        "BasePrice": 1
+      }
+    ]
+  }
+]

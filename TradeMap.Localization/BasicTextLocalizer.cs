@@ -6,21 +6,25 @@ namespace TradeMap.Localization
 {
     public class BasicTextLocalizer : ITextLocalizer
     {
+        private readonly CultureInfo _culture;
+
+
         public BasicTextLocalizer(CultureInfo culture)
         {
             _culture = culture;
         }
 
-        public string Expand(string text, Dictionary<string, object> variables)
+        public string Expand(string text, Dictionary<string, object>? variables)
         {
+            if (variables == null)
+            {
+                return Expand(text);
+            }
             string res = text;
             string separator = _culture.TextInfo.ListSeparator;
-            if (variables != null)
+            foreach (var pair in variables)
             {
-                foreach (var pair in variables)
-                {
-                    res += separator + pair.Key + "=" + Convert.ToString(pair.Value, _culture);
-                }
+                res += separator + pair.Key + "=" + Convert.ToString(pair.Value, _culture);
             }
             return res;
         }
@@ -29,7 +33,5 @@ namespace TradeMap.Localization
         {
             return text;
         }
-
-        private readonly CultureInfo _culture;
     }
 }
